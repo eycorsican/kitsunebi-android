@@ -17,6 +17,7 @@ Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
 - 配置文件的 freedom outbound 需要使用 [`UseIP` 策略](https://www.v2ray.com/chapter_02/protocols/freedom.html#outboundconfigurationobject)
 - 配置文件不需要有 Inbound，app 使用了 `tun2socks` 作为 inbound，并已开启 [http,tls 流量嗅探](https://www.v2ray.com/chapter_02/01_overview.html#sniffingobject)
 - 如果 freedom outbound 正确配置了 `UseIP`，设备所有 DNS 请求均由 V2Ray 的 [DNS 服务器](https://www.v2ray.com/chapter_02/04_dns.html)来解析，正确设置了 DNS 服务器可以避免 DNS 污染以及 CDN 相关的 DNS 问题
+- 目前，非 VMess 协议的 outbound 不可以用域名来做服务器地址，必须要用 IP
 - 下面是一个示例配置：
 ```json
 {
