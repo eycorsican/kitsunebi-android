@@ -10,6 +10,7 @@ Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
 
 ## 使用提示
 
+- App 使用的 v2ray-core 版本为 v4.3，你或许需要确保服务端也升级到相应的版本
 - 把配置文件复制粘贴至主界面后，点击连接按钮即可启动
 - 如果配置文件不正确或者出错，通常不会有任何错误提示
 - 配置文件可使用一个常见的 V2Ray 配置
