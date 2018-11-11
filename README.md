@@ -1,4 +1,4 @@
-# Kitsunebi4Android
+# Kitsunebi
 
 Not yet ready for opensourcing.
 
