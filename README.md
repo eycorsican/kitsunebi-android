@@ -2,6 +2,12 @@
 
 Not yet ready for opensourcing.
 
+## 下载
+
+<a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="100"></a>
+
+Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
+
 ## 使用提示
 
 - 把配置文件复制粘贴至主界面后，点击连接按钮即可启动
