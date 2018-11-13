@@ -1,0 +1,107 @@
+<resources>
+    <string name="app_name">Kitsunebi</string>
+    <string name="action_settings">Settings</string>
+    <string name="config_preference">config_preference</string>
+    <string name="preference_config_key">preference_config_key</string>
+    <string name="notification_channel_id">notification_channel_id</string>
+    <string name="default_config">
+{\n
+    \"log\": {\n
+        \"loglevel\": \"info\"\n
+    },\n
+    \"policy\": {\n
+        \"0\": {\n
+            \"bufferSize\": 0\n
+        }\n
+    },\n
+    \"dns\": {\n
+        \"clientIP\": \"115.239.211.92\",\n
+        \"hosts\": {\n
+            \"localhost\": \"127.0.0.1\",\n
+            \"domain:lan\": \"127.0.0.1\",\n
+            \"domain:local\": \"127.0.0.1\",\n
+            \"domain:arpa\": \"127.0.0.1\"\n
+        },\n
+        \"servers\": [\n
+            \"8.8.8.8\",\n
+            \"1.1.1.1\",\n
+            {\n
+                \"address\": \"223.5.5.5\",\n
+                \"port\": 53,\n
+                \"domains\": [\n
+                    \"geosite:cn\"\n
+                ]\n
+            }\n
+        ]\n
+    },\n
+    \"outbounds\": [\n
+        {\n
+            \"mux\": {\n
+                \"concurrency\": 8,\n
+                \"enabled\": false\n
+            },\n
+            \"protocol\": \"vmess\",\n
+            \"settings\": {\n
+                \"vnext\": [\n
+                    {\n
+                        \"users\": [\n
+                            {\n
+                                \"id\": \"01f7abbf-1431-48d7-bc22-fd1d614d8dfe\",\n
+                                \"alterId\": 0,\n
+                                \"security\": \"chacha20-poly1305\"\n
+                            }\n
+                        ],\n
+                        \"address\": \"myserver.com\",\n
+                        \"port\": 10086\n
+                    }\n
+                ]\n
+            },\n
+            \"streamSettings\": {\n
+                \"network\": \"tcp\"\n
+            },\n
+            \"tag\": \"proxy\"\n
+        },\n
+        {\n
+            \"protocol\": \"freedom\",\n
+            \"settings\": {\n
+                \"domainStrategy\": \"UseIP\"\n
+            },\n
+            \"tag\": \"direct\"\n
+        },\n
+        {\n
+            \"protocol\": \"blackhole\",\n
+            \"settings\": {},\n
+            \"tag\": \"block\"\n
+        }\n
+    ],\n
+    \"routing\": {\n
+        \"settings\": {\n
+            \"rules\": [\n
+                {\n
+                    \"type\": \"field\",\n
+                    \"domain\": [\n
+                        \"geosite:cn\"\n
+                    ],\n
+                    \"outboundTag\": \"direct\"\n
+                },\n
+                {\n
+                    \"type\": \"field\",\n
+                    \"ip\": [\n
+                        \"geoip:cn\",\n
+                        \"geoip:private\"\n
+                    ],\n
+                    \"outboundTag\": \"direct\"\n
+                },\n
+                {\n
+                    \"type\": \"field\",\n
+                    \"network\": \"tcp,udp\",\n
+                    \"outboundTag\": \"proxy\"\n
+                }\n
+            ],\n
+            \"domainStrategy\": \"IPIfNonMatch\"\n
+        },\n
+        \"strategy\": \"rules\"\n
+    }\n
+}\n
+    </string>
+</resources>
