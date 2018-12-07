@@ -2,6 +2,10 @@
 
 A fully-featured V2Ray client for Android.
 
+## Build
+
+You must first build the `tun2socks.aar` library from [this repo](https://github.com/eycorsican/go-tun2socks-android) and copy it into `app/libs`.
+
 ## 下载
 
 <a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="100"></a>
