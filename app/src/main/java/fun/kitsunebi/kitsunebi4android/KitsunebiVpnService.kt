@@ -65,8 +65,8 @@ open class KitsunebiVpnService: VpnService() {
 
     class Service(service: VpnService): Tun2socksVpnService {
         val vpnService = service
-        override fun protect(fd: Long) {
-            vpnService.protect(fd.toInt())
+        override fun protect(fd: Long): Boolean {
+            return vpnService.protect(fd.toInt())
         }
     }
 
