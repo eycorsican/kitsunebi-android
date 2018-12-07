@@ -18,17 +18,16 @@ import java.nio.ByteBuffer
 
 open class KitsunebiVpnService: VpnService() {
     var configString: String = ""
-    var proxyDomainIPMap: HashMap<String, String> = HashMap<String, String>()
     var pfd: ParcelFileDescriptor? = null
     var inputStream: FileInputStream? = null
     var outputStream: FileOutputStream? = null
     var buffer = ByteBuffer.allocate(1501)
     var isStopped = false
 
-    data class Config(val outbounds: List<Outbound>?)
-    data class Outbound(val protocol: String = "", val settings: Settings? = null)
-    data class Settings(val vnext: List<Server?>? = emptyList())
-    data class Server(val address: String? = null)
+//    data class Config(val outbounds: List<Outbound>?)
+//    data class Outbound(val protocol: String = "", val settings: Settings? = null)
+//    data class Settings(val vnext: List<Server?>? = emptyList())
+//    data class Server(val address: String? = null)
 
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(contxt: Context?, intent: Intent?) {
@@ -97,39 +96,6 @@ open class KitsunebiVpnService: VpnService() {
         configString = intent?.extras?.get("config").toString()
 
         thread (start = true) {
-            var error = false
-
-            val config = Klaxon().parse<Config>(configString)
-            if (config != null) {
-                config.outbounds?.forEach {
-                    if (it.protocol == "vmess") {
-                        it.settings?.vnext?.forEach {
-                            if (it != null && it.address != null) {
-                                println("vmess server address: ${it.address}")
-                                try {
-                                    val addr = InetAddress.getByName(it.address)
-                                    val ip = addr.getHostAddress()
-                                    if (it.address != ip) {
-                                        // address is a domain name
-                                        proxyDomainIPMap.put(it.address, ip)
-                                    }
-                                } catch (e: Exception) {
-                                    error = true
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                println("parsing v2ray config failed")
-                error = true
-            }
-
-            if (error) {
-                sendBroadcast(Intent("vpn_start_err"))
-                return@thread
-            }
-
             val builder = Builder()
             builder.setSession("vv")
                     .setMtu(1500)
@@ -160,9 +126,8 @@ open class KitsunebiVpnService: VpnService() {
                 fos2.write(geositeBytes)
                 fos2.close()
             }
-            val serverDomains = proxyDomainIPMap.keys.joinToString(separator = ",")
-            val serverIPs = proxyDomainIPMap.values.joinToString(separator = ",")
-            tun2socks.Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath, serverDomains, serverIPs)
+
+            tun2socks.Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath)
 
             sendBroadcast(Intent("vpn_started"))
 
