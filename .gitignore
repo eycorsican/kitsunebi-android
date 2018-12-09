@@ -12,7 +12,6 @@
 /captures
 .externalNativeBuild
 *.aar
-!/app/libs/tun2socks.aar
 .gradle
 /build/
 
