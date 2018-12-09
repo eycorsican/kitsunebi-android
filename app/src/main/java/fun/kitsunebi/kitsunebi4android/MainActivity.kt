@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
                     fab.setImageResource(android.R.drawable.ic_media_play)
                     showAlert("Start VPN service failed")
                 }
+                "vpn_start_err_dns" -> {
+                    running = false
+                    fab.setImageResource(android.R.drawable.ic_media_play)
+                    showAlert("Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
+                }
                 "pong" -> {
                     fab.setImageResource(android.R.drawable.ic_media_pause)
                     running = true
@@ -65,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(broadcastReceiver, IntentFilter("vpn_stopped"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_started"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err"))
+        registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err_dns"))
         registerReceiver(broadcastReceiver, IntentFilter("pong"))
 
         sendBroadcast(Intent("ping"))

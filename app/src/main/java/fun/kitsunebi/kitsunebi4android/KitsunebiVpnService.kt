@@ -25,7 +25,11 @@ open class KitsunebiVpnService: VpnService() {
     var buffer = ByteBuffer.allocate(1501)
     var isStopped = false
 
-    data class Config(val outbounds: List<Outbound>?)
+    data class Config(val outbounds: List<Outbound>? = null,
+                      val outboundDetour: List<Outbound>? = null,
+                      val outbound: Outbound? = null,
+                      val dns: Dns? = null)
+    data class Dns(val servers: List<Any>? = null)
     data class Outbound(val protocol: String = "", val settings: Settings? = null)
     data class Settings(val vnext: List<Server?>? = emptyList())
     data class Server(val address: String? = null)
@@ -97,38 +101,63 @@ open class KitsunebiVpnService: VpnService() {
         configString = intent?.extras?.get("config").toString()
 
         thread (start = true) {
-            var error = false
-
-            val config = Klaxon().parse<Config>(configString)
-            if (config != null) {
-                config.outbounds?.forEach {
-                    if (it.protocol == "vmess") {
-                        it.settings?.vnext?.forEach {
-                            if (it != null && it.address != null) {
-                                println("vmess server address: ${it.address}")
-                                try {
-                                    val addr = InetAddress.getByName(it.address)
-                                    val ip = addr.getHostAddress()
-                                    if (it.address != ip) {
-                                        // address is a domain name
-                                        proxyDomainIPMap.put(it.address, ip)
-                                    }
-                                } catch (e: Exception) {
-                                    error = true
+            // FIXME: Support other protocols.
+            fun resolveIP(outbound: Outbound) {
+                if (outbound.protocol == "vmess") {
+                    outbound.settings?.vnext?.forEach {
+                        if (it != null && it.address != null) {
+                            println("vmess server address: ${it.address}")
+                            try {
+                                // FIXME: Get all IPs.
+                                val addr = InetAddress.getByName(it.address)
+                                val ip = addr.getHostAddress()
+                                if (it.address != ip) {
+                                    // address is a domain name
+                                    proxyDomainIPMap.put(it.address, ip)
                                 }
+                            } catch (e: Exception) {
+                                println(e)
+                                // FIXME: Handle error for the corresponding server, e.g. remove the
+                                // from the config, notifying user that the server it not usable.
                             }
                         }
                     }
                 }
-            } else {
-                println("parsing v2ray config failed")
-                error = true
             }
 
-            if (error) {
+            val config = Klaxon().parse<Config>(configString)
+            if (config != null) {
+                if (config.dns == null || config.dns.servers == null || config.dns.servers.size == 0) {
+                    println("must configure dns servers since v2ray will use localhost if there isn't any dns servers")
+                    sendBroadcast(Intent("vpn_start_err_dns"))
+                    return@thread
+                }
+
+                config.dns.servers.forEach {
+                    if ((it as String) == "localhost") {
+                        println("using local dns resolver is not allowed since it will cause infinite loop")
+                        sendBroadcast(Intent("vpn_start_err_dns"))
+                        return@thread
+                    }
+                }
+
+                config.outbounds?.forEach {
+                    resolveIP(it)
+                }
+
+                // For legacy config format.
+                config.outboundDetour?.forEach {
+                    resolveIP(it)
+                }
+                if (config.outbound != null) {
+                    resolveIP(config.outbound)
+                }
+            } else {
+                println("parsing v2ray config failed")
                 sendBroadcast(Intent("vpn_start_err"))
                 return@thread
             }
+
 
             val builder = Builder()
             builder.setSession("vv")
