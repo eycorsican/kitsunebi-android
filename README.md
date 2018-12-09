@@ -20,7 +20,9 @@ Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
 - 配置文件可使用一个常见的 V2Ray 配置
 - 配置文件的 freedom outbound 推荐使用 [`UseIP` 策略](https://www.v2ray.com/chapter_02/protocols/freedom.html#outboundconfigurationobject)
 - 配置文件不需要有 Inbound，app 使用了 `tun2socks` 作为 inbound，并已开启 [http,tls 流量嗅探](https://www.v2ray.com/chapter_02/01_overview.html#sniffingobject)
+- 配置文件中必需至少配置 1 个 DNS 服务器，但绝对不能用 "localhost"（会引起死循环），国内或国外 DNS 都问题不大，V2Ray 的 sniffing 功能配合一些域名路由规则可以很大程序上解决染污问题
 - 设备所有 DNS 请求均会由 V2Ray 的 [DNS 服务器](https://www.v2ray.com/chapter_02/04_dns.html) 来解析，正确设置了 DNS 服务器可以避免 DNS 污染以及 CDN 相关的 DNS 问题
+- 非 VMess 的 outbound 必需用 IP 作服务器地址
 - 下面是一个示例配置：
 ```json
 {
