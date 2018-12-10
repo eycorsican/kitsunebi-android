@@ -31,7 +31,7 @@ open class KitsunebiVpnService: VpnService() {
                       val dns: Dns? = null)
     data class Dns(val servers: List<Any>? = null)
     data class Outbound(val protocol: String = "", val settings: Settings? = null)
-    data class Settings(val vnext: List<Server?>? = emptyList())
+    data class Settings(val vnext: List<Server?>? = null)
     data class Server(val address: String? = null)
 
     val broadcastReceiver = object : BroadcastReceiver() {
@@ -134,7 +134,8 @@ open class KitsunebiVpnService: VpnService() {
                 }
 
                 config.dns.servers.forEach {
-                    if ((it as String) == "localhost") {
+                    var dnsServer = it as? String
+                    if ( dnsServer != null && dnsServer == "localhost") {
                         println("using local dns resolver is not allowed since it will cause infinite loop")
                         sendBroadcast(Intent("vpn_start_err_dns"))
                         return@thread
