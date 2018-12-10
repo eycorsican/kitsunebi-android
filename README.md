@@ -6,6 +6,16 @@ A fully-featured V2Ray client for Android.
 
 You must first build the `tun2socks.aar` library from [this repo](https://github.com/eycorsican/go-tun2socks-android) and copy it into `app/libs`.
 
+## 开发相关问题
+
+这个 V2Ray Android 客户端利用 `go-tun2socks` 把所有的 TCP/UDP 流量转给到 V2Ray 处理，所用的 `v2ray-core` 是没经过任何修改的官方版本，所以在配置和体验方面不会有太大差别。但在 Android 上有一些东西需要特殊处理，这也是在配置和使用上造成一些差别的地方。
+
+- UDP 流量在转给 V2Ray 之前，会先在 `go-tun2socks` 里面经过一个嗅探步骤，如果嗅探出来是 DNS 流量，这些 UDP 流量就不会直接转给 V2Ray，而是把其中需要解析的域名抽取出来再通过 V2Ray 的 DNS 去解析，这时 V2Ray 所用的 DNS 服务器是按照配置文件上的配置来选取，也就是说所用的 DNS 服务器不需要跟原来 UDP 流量的目的地址相同。
+- 在 Android 上有几个情况会造成流量/请求的死循环，目前就我所知的有以下几个：
+  - 通过 VpnService 的 TUN 接口读取数据，再由代理程序代为发出时，如果不 [protect](https://developer.android.com/reference/android/net/VpnService#protect(int)) 代理程序用来发数据的 socket fd，代理程序发出的数据又会被转到 TUN 接口上，这个问题基本可以用 v2ray-core 提供的 `RegisterDialerController()` 和 `RegisterListenerController()` 两个接口完美解决
+  - 当代理服务器的地址是域名的时候，如果要转发数据给代理服务器，就必须先把代理服务器的 IP 地址解析出来，但这个 DNS 解析本身又有可能是另一个代理请求（考虑下全局模式），就出现死循环了，这个问题大概可以有两种解决方法：一是在启动 VPN 前把所有代理服务器的 IP 预先解析出来，之后如果碰到要解析这些域名的请求，就直接替换/返回预先解析好的 IP，二是强制所有这些域名不走代理（结合 `go-tun2socks` 的 DNS 请求拦截特性，利用 V2Ray 的 DNS 和路由功能可以比较容易实现）。本项目目前采用第一个方法，但这方法的缺点很明显就是当域名所对应的 DNS 记录中途被修改了的话就要重连 VPN
+  - 还有一种会引起死循环的情况是 V2Ray 的 DNS 配置里用 `localhost`（不配置 DNS 的话默认就是用 `localhost`，所以必须要配置），一方面因为 `go-tun2socks` 的 DNS 流量拦截特性，另一方面因为 `本地 DNS` 所发出的 UDP 流量不太容易 protect 起来，所以就会形成这样一个死循环：V2Ray 用 `本地 DNS` (`localhost`) 发请求，UDP 流量没被 protect，发到 TUN 接口上，`go-tun2socks` 拦截下来，用 V2Ray 的 DNS 解析，V2Ray 用 `本地 DNS` (`localhost`) 发请求......解决方法当然是要强制禁止用 `localhost`
+
 ## 下载
 
 <a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="100"></a>
