@@ -84,10 +84,6 @@ open class KitsunebiVpnService: VpnService() {
                 tun2socks.Tun2socks.inputPacket(buffer.array())
                 buffer.clear()
             }
-            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                // In non-blocking mode
-                Thread.sleep(50)
-            }
         }
     }
 
@@ -160,20 +156,26 @@ open class KitsunebiVpnService: VpnService() {
             }
 
 
-            val builder = Builder()
-            builder.setSession("vv")
+            pfd = Builder().setSession("vv")
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
                     .addDnsServer("223.5.5.5")
                     .addSearchDomain("local")
                     .addRoute("0.0.0.0", 0)
-                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        builder.setBlocking(true)
-                    }
-            pfd = builder.establish()
+                    .establish()
 
-            inputStream = FileInputStream(pfd?.fileDescriptor)
-            outputStream = FileOutputStream(pfd?.fileDescriptor)
+            // Put the tunFd in blocking mode. Since we are reading packets from this fd in the
+            // main loop, failing to do this will cause very high CPU utilization, which is
+            // absolutely not what we want. Doing this in Go code because Android only has
+            // limited support for this feature, which requires API level >= 21.
+            if ((pfd == null) || !tun2socks.Tun2socks.setNonblock(pfd!!.fd.toLong(), false)) {
+                println("failed to put tunFd in blocking mode")
+                sendBroadcast(Intent("vpn_start_err"))
+                return@thread
+            }
+
+            inputStream = FileInputStream(pfd!!.fileDescriptor)
+            outputStream = FileOutputStream(pfd!!.fileDescriptor)
 
             val flow = Flow(outputStream)
             val service = Service(this)
