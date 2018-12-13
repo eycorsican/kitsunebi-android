@@ -4,7 +4,7 @@ A fully-featured V2Ray client for Android.
 
 ## Build
 
-You must first build the `tun2socks.aar` library from [this repo](https://github.com/eycorsican/go-tun2socks-android) and copy it into `app/libs`.
+You must first build the `tun2socks.aar` library from [this repo](https://github.com/eycorsican/go-tun2socks-android) and copy it into `app/libs`, get `geoip.dat` and `geosite.dat` from the latest v2ray-core release and copy them into `app/src/main/res/raw`.
 
 ## 开发相关问题
 
