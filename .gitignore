@@ -1,6 +1,7 @@
 /tools
 /app/release
 /.idea
+*.dat
 
 *.iml
 .gradle
