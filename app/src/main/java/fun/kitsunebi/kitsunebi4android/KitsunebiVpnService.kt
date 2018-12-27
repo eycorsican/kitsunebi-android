@@ -208,4 +208,9 @@ open class KitsunebiVpnService: VpnService() {
         super.onDestroy()
         unregisterReceiver(broadcastReceiver)
     }
+
+    override fun onRevoke() {
+        super.onRevoke()
+        stopVPN()
+    }
 }
