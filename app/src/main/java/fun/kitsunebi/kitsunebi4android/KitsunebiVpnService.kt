@@ -1,10 +1,11 @@
 package `fun`.kitsunebi.kitsunebi4android
 
+import android.annotation.TargetApi
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.VpnService
+import android.net.*
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import tun2socks.PacketFlow
@@ -24,6 +25,37 @@ open class KitsunebiVpnService: VpnService() {
     var outputStream: FileOutputStream? = null
     var buffer = ByteBuffer.allocate(1501)
     var isStopped = false
+    
+    val cm by lazy { this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
+
+    private var underlyingNetwork: Network? = null
+        @TargetApi(22)
+        set(value) {
+            println("setUnderlyingNetworks to ${value}")
+            setUnderlyingNetworks(if (value == null) null else arrayOf(value))
+            field = value
+        }
+
+    companion object {
+        @TargetApi(21)
+        private val defaultNetworkRequest = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+                .build()
+    }
+
+    @TargetApi(22)
+    private val defaultNetworkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            underlyingNetwork = network
+        }
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities?) {
+            underlyingNetwork = network
+        }
+        override fun onLost(network: Network) {
+            underlyingNetwork = null
+        }
+    }
 
     data class Config(val outbounds: List<Outbound>? = null,
                       val outboundDetour: List<Outbound>? = null,
@@ -172,6 +204,10 @@ open class KitsunebiVpnService: VpnService() {
                 println("failed to put tunFd in blocking mode")
                 sendBroadcast(Intent("vpn_start_err"))
                 return@thread
+            }
+
+            if (Build.VERSION.SDK_INT >= 22) {
+                cm.requestNetwork(defaultNetworkRequest, defaultNetworkCallback)
             }
 
             inputStream = FileInputStream(pfd!!.fileDescriptor)
