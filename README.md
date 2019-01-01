@@ -13,8 +13,8 @@ You must first build the `tun2socks.aar` library from [this repo](https://github
 - UDP 流量在转给 V2Ray 之前，会先在 `go-tun2socks` 里面经过一个嗅探步骤，如果嗅探出来是 DNS 流量，这些 UDP 流量就不会直接转给 V2Ray，而是把其中需要解析的域名抽取出来再通过 V2Ray 的 DNS 去解析，这时 V2Ray 所用的 DNS 服务器是按照配置文件上的配置来选取，也就是说所用的 DNS 服务器不需要跟原来 UDP 流量的目的地址相同。
 - 在 Android 上有几个情况会造成流量/请求的死循环，目前就我所知的有以下几个：
   - 通过 VpnService 的 TUN 接口读取数据，再由代理程序代为发出时，如果不 [protect](https://developer.android.com/reference/android/net/VpnService#protect(int)) 代理程序用来发数据的 socket fd，代理程序发出的数据又会被转到 TUN 接口上，这个问题基本可以用 v2ray-core 提供的 `RegisterDialerController()` 和 `RegisterListenerController()` 两个接口完美解决
-  - 当代理服务器的地址是域名的时候，如果要转发数据给代理服务器，就必须先把代理服务器的 IP 地址解析出来，但这个 DNS 解析本身又有可能是另一个代理请求（考虑下全局模式），就出现死循环了，这个问题大概可以有两种解决方法：一是在启动 VPN 前把所有代理服务器的 IP 预先解析出来，之后如果碰到要解析这些域名的请求，就直接替换/返回预先解析好的 IP，二是强制所有这些域名不走代理（结合 `go-tun2socks` 的 DNS 请求拦截特性，利用 V2Ray 的 DNS 和路由功能可以比较容易实现）。本项目目前采用第一个方法，但这方法的缺点很明显就是当域名所对应的 DNS 记录中途被修改了的话就要重连 VPN
-  - 还有一种会引起死循环的情况是 V2Ray 的 DNS 配置里用 `localhost`（不配置 DNS 的话默认就是用 `localhost`，所以必须要配置），一方面因为 `go-tun2socks` 的 DNS 流量拦截特性，另一方面因为 `本地 DNS` 所发出的 UDP 流量不太容易 protect 起来，所以就会形成这样一个死循环：V2Ray 用 `本地 DNS` (`localhost`) 发请求，UDP 流量没被 protect，发到 TUN 接口上，`go-tun2socks` 拦截下来，用 V2Ray 的 DNS 解析，V2Ray 用 `本地 DNS` (`localhost`) 发请求......解决方法当然是要强制禁止用 `localhost`
+  - <del>当代理服务器的地址是域名的时候，如果要转发数据给代理服务器，就必须先把代理服务器的 IP 地址解析出来，但这个 DNS 解析本身又有可能是另一个代理请求（考虑下全局模式），就出现死循环了，这个问题大概可以有两种解决方法：一是在启动 VPN 前把所有代理服务器的 IP 预先解析出来，之后如果碰到要解析这些域名的请求，就直接替换/返回预先解析好的 IP，二是强制所有这些域名不走代理（结合 `go-tun2socks` 的 DNS 请求拦截特性，利用 V2Ray 的 DNS 和路由功能可以比较容易实现）。本项目目前采用第一个方法，但这方法的缺点很明显就是当域名所对应的 DNS 记录中途被修改了的话就要重连 VPN</del>
+  - <del>还有一种会引起死循环的情况是 V2Ray 的 DNS 配置里用 `localhost`（不配置 DNS 的话默认就是用 `localhost`，所以必须要配置），一方面因为 `go-tun2socks` 的 DNS 流量拦截特性，另一方面因为 `本地 DNS` 所发出的 UDP 流量不太容易 protect 起来，所以就会形成这样一个死循环：V2Ray 用 `本地 DNS` (`localhost`) 发请求，UDP 流量没被 protect，发到 TUN 接口上，`go-tun2socks` 拦截下来，用 V2Ray 的 DNS 解析，V2Ray 用 `本地 DNS` (`localhost`) 发请求......解决方法当然是要强制禁止用 `localhost`</del>
 
 ## 下载
 
@@ -24,15 +24,13 @@ Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
 
 ## 使用提示
 
-- App 使用较新的 v2ray-core 版本，你或许需要确保服务端也升级到相应的版本，具体版本号请看 Release Notes，
+- App 使用较新的 v2ray-core 版本，你或许需要确保服务端也升级到相应的版本，具体版本号请看 Release Notes
 - 把配置文件复制粘贴至主界面后，点击连接按钮即可启动
 - 如果配置文件不正确或者出错，通常不会有任何错误提示
 - 配置文件可使用一个常见的 V2Ray 配置
 - 配置文件的 freedom outbound 推荐使用 [`UseIP` 策略](https://www.v2ray.com/chapter_02/protocols/freedom.html#outboundconfigurationobject)
 - 配置文件不需要有 Inbound，app 使用了 `tun2socks` 作为 inbound，并已开启 [http,tls 流量嗅探](https://www.v2ray.com/chapter_02/01_overview.html#sniffingobject)
-- 配置文件中必需至少配置 1 个 DNS 服务器，但绝对不能用 "localhost"（会引起死循环），国内或国外 DNS 都问题不大，V2Ray 的 sniffing 功能配合一些域名路由规则可以很大程序上解决染污问题
 - 设备所有 DNS 请求均会由 V2Ray 的 [DNS 服务器](https://www.v2ray.com/chapter_02/04_dns.html) 来解析，正确设置了 DNS 服务器可以避免 DNS 污染以及 CDN 相关的 DNS 问题
-- 非 VMess 的 outbound 必需用 IP 作服务器地址
 - 下面是一个示例配置：
 ```json
 {
