@@ -9,42 +9,41 @@ import android.net.*
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import tun2socks.PacketFlow
+import tun2socks.Tun2socks
 import tun2socks.VpnService as Tun2socksVpnService
 import kotlin.concurrent.thread
 import com.beust.klaxon.Klaxon
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.InetAddress
 import java.nio.ByteBuffer
 
 open class KitsunebiVpnService: VpnService() {
-    var configString: String = ""
-    var proxyDomainIPMap: HashMap<String, String> = HashMap<String, String>()
-    var pfd: ParcelFileDescriptor? = null
-    var inputStream: FileInputStream? = null
-    var outputStream: FileOutputStream? = null
-    var buffer = ByteBuffer.allocate(1501)
+    private var configString: String = ""
+    private var pfd: ParcelFileDescriptor? = null
+    private var inputStream: FileInputStream? = null
+    private var outputStream: FileOutputStream? = null
+    private var buffer = ByteBuffer.allocate(1501)
     var isStopped = false
     
-    val cm by lazy { this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
+    private val cm by lazy { this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
 
+    @TargetApi(28)
     private var underlyingNetwork: Network? = null
-        @TargetApi(22)
+        @TargetApi(28)
         set(value) {
-            println("setUnderlyingNetworks to ${value}")
             setUnderlyingNetworks(if (value == null) null else arrayOf(value))
             field = value
         }
 
     companion object {
-        @TargetApi(21)
+        @TargetApi(28)
         private val defaultNetworkRequest = NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
                 .build()
     }
 
-    @TargetApi(22)
+    @TargetApi(28)
     private val defaultNetworkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             underlyingNetwork = network
@@ -66,7 +65,7 @@ open class KitsunebiVpnService: VpnService() {
     data class Settings(val vnext: List<Server?>? = null)
     data class Server(val address: String? = null)
 
-    val broadcastReceiver = object : BroadcastReceiver() {
+    private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(contxt: Context?, intent: Intent?) {
             when (intent?.action) {
                 "stop_vpn" -> {
@@ -84,7 +83,7 @@ open class KitsunebiVpnService: VpnService() {
 
     private fun stopVPN() {
         isStopped = true
-        tun2socks.Tun2socks.stopV2Ray()
+        Tun2socks.stopV2Ray()
         pfd?.close()
         pfd = null
         inputStream = null
@@ -94,20 +93,20 @@ open class KitsunebiVpnService: VpnService() {
     }
 
     class Flow(stream: FileOutputStream?): PacketFlow {
-        val flowOutputStream = stream
+        private val flowOutputStream = stream
         override fun writePacket(pkt: ByteArray?) {
             flowOutputStream?.write(pkt)
         }
     }
 
     class Service(service: VpnService): Tun2socksVpnService {
-        val vpnService = service
+        private val vpnService = service
         override fun protect(fd: Long): Boolean {
             return vpnService.protect(fd.toInt())
         }
     }
 
-    fun handlePackets() {
+    private fun handlePackets() {
         while (!isStopped) {
             val n = inputStream?.read(buffer.array())
             n?.let { it } ?: return
@@ -125,34 +124,10 @@ open class KitsunebiVpnService: VpnService() {
         registerReceiver(broadcastReceiver, IntentFilter("ping"))
     }
 
-    override public fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         configString = intent?.extras?.get("config").toString()
 
         thread (start = true) {
-            // FIXME: Support other protocols.
-            fun resolveIP(outbound: Outbound) {
-                if (outbound.protocol == "vmess") {
-                    outbound.settings?.vnext?.forEach {
-                        if (it != null && it.address != null) {
-                            println("vmess server address: ${it.address}")
-                            try {
-                                // FIXME: Get all IPs.
-                                val addr = InetAddress.getByName(it.address)
-                                val ip = addr.getHostAddress()
-                                if (it.address != ip) {
-                                    // address is a domain name
-                                    proxyDomainIPMap.put(it.address, ip)
-                                }
-                            } catch (e: Exception) {
-                                println(e)
-                                // FIXME: Handle error for the corresponding server, e.g. remove the
-                                // from the config, notifying user that the server it not usable.
-                            }
-                        }
-                    }
-                }
-            }
-
             val config = Klaxon().parse<Config>(configString)
             if (config != null) {
                 if (config.dns == null || config.dns.servers == null || config.dns.servers.size == 0) {
@@ -162,24 +137,12 @@ open class KitsunebiVpnService: VpnService() {
                 }
 
                 config.dns.servers.forEach {
-                    var dnsServer = it as? String
+                    val dnsServer = it as? String
                     if ( dnsServer != null && dnsServer == "localhost") {
                         println("using local dns resolver is not allowed since it will cause infinite loop")
                         sendBroadcast(Intent("vpn_start_err_dns"))
                         return@thread
                     }
-                }
-
-                config.outbounds?.forEach {
-                    resolveIP(it)
-                }
-
-                // For legacy config format.
-                config.outboundDetour?.forEach {
-                    resolveIP(it)
-                }
-                if (config.outbound != null) {
-                    resolveIP(config.outbound)
                 }
             } else {
                 println("parsing v2ray config failed")
@@ -200,13 +163,13 @@ open class KitsunebiVpnService: VpnService() {
             // main loop, failing to do this will cause very high CPU utilization, which is
             // absolutely not what we want. Doing this in Go code because Android only has
             // limited support for this feature, which requires API level >= 21.
-            if ((pfd == null) || !tun2socks.Tun2socks.setNonblock(pfd!!.fd.toLong(), false)) {
+            if ((pfd == null) || !Tun2socks.setNonblock(pfd!!.fd.toLong(), false)) {
                 println("failed to put tunFd in blocking mode")
                 sendBroadcast(Intent("vpn_start_err"))
                 return@thread
             }
 
-            if (Build.VERSION.SDK_INT >= 22) {
+            if (Build.VERSION.SDK_INT >= 28) {
                 cm.requestNetwork(defaultNetworkRequest, defaultNetworkCallback)
             }
 
@@ -228,9 +191,7 @@ open class KitsunebiVpnService: VpnService() {
                 fos2.write(geositeBytes)
                 fos2.close()
             }
-            val serverDomains = proxyDomainIPMap.keys.joinToString(separator = ",")
-            val serverIPs = proxyDomainIPMap.values.joinToString(separator = ",")
-            tun2socks.Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath, serverDomains, serverIPs)
+            Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath)
 
             sendBroadcast(Intent("vpn_started"))
 
