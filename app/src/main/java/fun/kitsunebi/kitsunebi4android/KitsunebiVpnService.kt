@@ -25,36 +25,36 @@ open class KitsunebiVpnService: VpnService() {
     private var buffer = ByteBuffer.allocate(1501)
     var isStopped = false
     
-    private val cm by lazy { this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
-
-    @TargetApi(28)
-    private var underlyingNetwork: Network? = null
-        @TargetApi(28)
-        set(value) {
-            setUnderlyingNetworks(if (value == null) null else arrayOf(value))
-            field = value
-        }
-
-    companion object {
-        @TargetApi(28)
-        private val defaultNetworkRequest = NetworkRequest.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
-                .build()
-    }
-
-    @TargetApi(28)
-    private val defaultNetworkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            underlyingNetwork = network
-        }
-        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities?) {
-            underlyingNetwork = network
-        }
-        override fun onLost(network: Network) {
-            underlyingNetwork = null
-        }
-    }
+//    private val cm by lazy { this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
+//
+//    @TargetApi(28)
+//    private var underlyingNetwork: Network? = null
+//        @TargetApi(28)
+//        set(value) {
+//            setUnderlyingNetworks(if (value == null) null else arrayOf(value))
+//            field = value
+//        }
+//
+//    companion object {
+//        @TargetApi(28)
+//        private val defaultNetworkRequest = NetworkRequest.Builder()
+//                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+//                .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+//                .build()
+//    }
+//
+//    @TargetApi(28)
+//    private val defaultNetworkCallback = object : ConnectivityManager.NetworkCallback() {
+//        override fun onAvailable(network: Network) {
+//            underlyingNetwork = network
+//        }
+//        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities?) {
+//            underlyingNetwork = network
+//        }
+//        override fun onLost(network: Network) {
+//            underlyingNetwork = null
+//        }
+//    }
 
     data class Config(val outbounds: List<Outbound>? = null,
                       val outboundDetour: List<Outbound>? = null,
@@ -169,9 +169,9 @@ open class KitsunebiVpnService: VpnService() {
                 return@thread
             }
 
-            if (Build.VERSION.SDK_INT >= 28) {
-                cm.requestNetwork(defaultNetworkRequest, defaultNetworkCallback)
-            }
+//            if (Build.VERSION.SDK_INT >= 28) {
+//                cm.requestNetwork(defaultNetworkRequest, defaultNetworkCallback)
+//            }
 
             inputStream = FileInputStream(pfd!!.fileDescriptor)
             outputStream = FileOutputStream(pfd!!.fileDescriptor)
