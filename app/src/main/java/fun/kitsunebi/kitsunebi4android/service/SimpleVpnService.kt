@@ -192,6 +192,8 @@ open class SimpleVpnService: VpnService() {
                 fos2.write(geositeBytes)
                 fos2.close()
             }
+
+            Tun2socks.setLocalDNS("223.5.5.5:53")
             Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath)
 
             sendBroadcast(Intent("vpn_started"))
