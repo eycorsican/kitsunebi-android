@@ -1,11 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="fun.kitsunebi.kitsunebi4android.MainActivity">
+    tools:context="fun.kitsunebi.kitsunebi4android.ui.MainActivity">
     <item
         android:id="@+id/format_btn"
         android:title="Format" />
     <item
         android:id="@+id/save_btn"
         android:title="Save" />
+    <item
+        android:id="@+id/help_btn"
+        android:title="Help" />
 </menu>

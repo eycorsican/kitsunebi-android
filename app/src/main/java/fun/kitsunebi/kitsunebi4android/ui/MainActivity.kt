@@ -1,5 +1,7 @@
-package `fun`.kitsunebi.kitsunebi4android
+package `fun`.kitsunebi.kitsunebi4android.ui
 
+import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -15,11 +17,9 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.content_main.*
 import org.json.JSONException
 import org.json.JSONObject
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.support.v4.app.NotificationCompat
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.net.Uri
 
 
 class MainActivity : AppCompatActivity() {
@@ -138,13 +138,18 @@ class MainActivity : AppCompatActivity() {
                 }
                 return true
             }
+            R.id.help_btn -> {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/eycorsican/kitsunebi-android"))
+                startActivity(intent)
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == RESULT_OK) {
-            val intent = Intent(this, KitsunebiVpnService::class.java)
+            val intent = Intent(this, SimpleVpnService::class.java)
             intent.putExtra("config", configString)
             startService(intent)
         }
