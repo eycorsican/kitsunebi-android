@@ -2,60 +2,65 @@ package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
 import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
-import `fun`.kitsunebi.kitsunebi4android.storage.*
+import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.Uri
+import android.net.VpnService
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-
-import kotlinx.android.synthetic.main.activity_main.*
-import android.net.VpnService
-import android.content.Intent
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.json.JSONException
 import org.json.JSONObject
-import android.content.BroadcastReceiver
-import android.content.IntentFilter
-import android.net.Uri
 
 
 class MainActivity : AppCompatActivity() {
 
-    var configString: String = ""
-    val mNotificationId = 1
-//    var mNotificationManager: NotificationManager? = null
     var running = false
+    private var starting = false
+    private var stopping = false
+//    val mNotificationId = 1
+    //    var mNotificationManager: NotificationManager? = null
 
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(contxt: Context?, intent: Intent?) {
             when (intent?.action) {
                 "vpn_stopped" -> {
                     running = false
+                    stopping = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
 //                    mNotificationManager?.cancel(mNotificationId)
                 }
                 "vpn_started" -> {
                     running = true
+                    starting = false
                     fab.setImageResource(android.R.drawable.ic_media_pause)
 //                    startNotification()
                 }
                 "vpn_start_err" -> {
                     running = false
+                    starting = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
                     showAlert("Start VPN service failed")
                 }
                 "vpn_start_err_dns" -> {
                     running = false
+                    starting = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
                     showAlert("Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
                 }
                 "pong" -> {
                     fab.setImageResource(android.R.drawable.ic_media_pause)
                     running = true
+                    Preferences.putBool(applicationContext, getString(R.string.vpn_is_running), true)
                 }
             }
         }
@@ -76,9 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         sendBroadcast(Intent("ping"))
 
-        val sharedPref = this?.getSharedPreferences(
-                getString(R.string.config_preference), Context.MODE_PRIVATE) ?: return
-        configString = sharedPref.getString(getString(R.string.preference_config_key), getString(R.string.default_config))
+        var configString = Preferences.getString(applicationContext, getString(R.string.preference_config_key), getString(R.string.default_config))
         configString?.let {
             formatJsonString(it).let {
                 configView.setText(it, TextView.BufferType.EDITABLE)
@@ -86,18 +89,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         fab.setOnClickListener { view ->
-            if (!running) {
+            if (!running && !starting) {
+                starting = true
                 fab.setImageResource(android.R.drawable.ic_media_ff)
                 configString = configView.text.toString()
+                Preferences.putString(applicationContext, getString(R.string.preference_config_key), configString)
                 val intent = VpnService.prepare(this)
                 if (intent != null) {
                     startActivityForResult(intent, 1)
                 } else {
                     onActivityResult(1, Activity.RESULT_OK, null);
                 }
-            } else {
+            } else if (running && !stopping) {
+                stopping = true
                 sendBroadcast(Intent("stop_vpn"))
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == RESULT_OK) {
+            val intent = Intent(this, SimpleVpnService::class.java)
+            startService(intent)
         }
     }
 
@@ -131,12 +144,7 @@ class MainActivity : AppCompatActivity() {
                     showAlert("Invalid JSON")
                     return true
                 }
-                val sharedPref = this?.getSharedPreferences(
-                        getString(R.string.config_preference), Context.MODE_PRIVATE) ?: return true
-                with (sharedPref.edit()) {
-                    putString(getString(R.string.preference_config_key), prettyText)
-                    commit()
-                }
+                Preferences.putString(applicationContext, getString(R.string.preference_config_key), prettyText)
                 return true
             }
             R.id.log_btn -> {
@@ -158,14 +166,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == RESULT_OK) {
-            val intent = Intent(this, SimpleVpnService::class.java)
-            intent.putExtra("config", configString)
-            startService(intent)
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(broadcastReceiver)
@@ -180,7 +180,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun showAlert(msg: String){
+    fun showAlert(msg: String) {
         val dialog = AlertDialog.Builder(this).setTitle("Message").setMessage(msg)
                 .setPositiveButton("Ok", { dialog, i ->
                 })

@@ -37,11 +37,29 @@
             android:parentActivityName=".ui.MainActivity">
         </activity>
 
+        <activity
+            android:name=".ui.StartVpnActivity"
+            android:theme="@style/Theme.Transparent">
+        </activity>
+
         <service
             android:name=".service.SimpleVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE" >
             <intent-filter>
                 <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.VpnTileService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Kitsunebi"
+            android:icon="@drawable/ic_v"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
             </intent-filter>
         </service>
 

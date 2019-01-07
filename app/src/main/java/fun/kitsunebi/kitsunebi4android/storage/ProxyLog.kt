@@ -1,9 +1,9 @@
 package `fun`.kitsunebi.kitsunebi4android.storage
 
-import androidx.room.*
 import `fun`.kitsunebi.kitsunebi4android.common.SingletonHolder
-import androidx.paging.DataSource
 import android.content.Context
+import androidx.paging.DataSource
+import androidx.room.*
 
 public const val PROXY_LOG_DB_NAME = "proxy_log.sqlite3"
 
@@ -47,6 +47,7 @@ interface ProxyLogDao {
 @Database(entities = arrayOf(ProxyLog::class), version = 4)
 abstract class ProxyLogDatabase : RoomDatabase() {
     abstract fun proxyLogDao(): ProxyLogDao
+
     companion object : SingletonHolder<ProxyLogDatabase, Context>({
         Room.databaseBuilder(it.applicationContext,
                 ProxyLogDatabase::class.java, PROXY_LOG_DB_NAME)

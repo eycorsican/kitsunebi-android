@@ -1,17 +1,16 @@
 package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
-import `fun`.kitsunebi.kitsunebi4android.common.*
+import `fun`.kitsunebi.kitsunebi4android.common.humanReadableByteCount
 import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog
-import androidx.paging.PagedListAdapter
 import android.content.Context
-import android.graphics.Color
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.RecyclerView
 
 class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLogAdapter.ProxyLogViewHolder>(ProxyLogDiffCallback()) {
     override fun onBindViewHolder(logHolder: ProxyLogViewHolder, position: Int) {
@@ -29,7 +28,7 @@ class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLo
                 parent, false), context)
     }
 
-    class ProxyLogViewHolder (view: View, context: Context) : RecyclerView.ViewHolder(view) {
+    class ProxyLogViewHolder(view: View, context: Context) : RecyclerView.ViewHolder(view) {
         private val context = context
         var row1: TextView = view.findViewById(R.id.row1)
         var row2_1: TextView = view.findViewById(R.id.row2_1)
@@ -52,8 +51,8 @@ class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLo
                         }
 
                         val sdf = java.text.SimpleDateFormat("HH:mm:ss")
-                        val start = java.util.Date(proxyLog.startTime!!/1000000)
-                        val end = java.util.Date(proxyLog.endTime!!/1000000)
+                        val start = java.util.Date(proxyLog.startTime!! / 1000000)
+                        val end = java.util.Date(proxyLog.endTime!! / 1000000)
                         row3.text = "${sdf.format(start)}, ${sdf.format(end)}"
                     }
 
@@ -66,10 +65,10 @@ class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLo
                         }
 
                         proxyLog.dnsQueryType?.let {
-                            val duration = (proxyLog.endTime!! - proxyLog.startTime!!)/1000000
+                            val duration = (proxyLog.endTime!! - proxyLog.startTime!!) / 1000000
                             var durationRepr: String = ""
                             if (duration >= 1000) {
-                                durationRepr = "${duration/1000}s"
+                                durationRepr = "${duration / 1000}s"
                             } else {
                                 durationRepr = "${duration}ms"
                             }
@@ -87,13 +86,15 @@ class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLo
                                 2 -> {
                                     row2_2.text = "A,AAAA, ${durationRepr}, ${proxyLog.dnsNumIPs} results"
                                 }
-                                else -> {}
+                                else -> {
+                                }
                             }
                         }
 
                         row3.text = "${proxyLog.dnsRequest}"
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
 
                 proxyLog.tag?.let {

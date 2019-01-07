@@ -4,6 +4,7 @@
     <string name="config_preference">config_preference</string>
     <string name="preference_config_key">preference_config_key</string>
     <string name="notification_channel_id">notification_channel_id</string>
+    <string name="vpn_is_running">vpn_is_running</string>
     <string name="default_config">
 {\n
     \"log\": {\n
