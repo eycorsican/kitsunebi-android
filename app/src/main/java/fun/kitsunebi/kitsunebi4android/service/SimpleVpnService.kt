@@ -13,6 +13,7 @@ import android.content.IntentFilter
 import android.net.*
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.preference.PreferenceManager
 import com.beust.klaxon.Klaxon
 import tun2socks.PacketFlow
 import tun2socks.Tun2socks
@@ -185,10 +186,12 @@ open class SimpleVpnService : VpnService() {
                 return@thread
             }
 
+            val localDns = Preferences.getString(applicationContext, getString(R.string.local_dns), null)
+
             pfd = Builder().setSession("vv")
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
-                    .addDnsServer("223.5.5.5")
+                    .addDnsServer(localDns)
                     .addSearchDomain("local")
                     .addRoute("0.0.0.0", 0)
                     .establish()
@@ -212,7 +215,11 @@ open class SimpleVpnService : VpnService() {
 
             val flow = Flow(outputStream)
             val service = Service(this)
-            val dbService = DBService(ProxyLogDatabase.getInstance(applicationContext))
+            var dbService: DBService? = null
+            val enableProxyLogging = Preferences.getBool(applicationContext, getString(R.string.is_enable_proxy_logging), null)
+            if (enableProxyLogging) {
+                dbService = DBService(ProxyLogDatabase.getInstance(applicationContext))
+            }
 
             val files = filesDir.list()
             if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
@@ -230,7 +237,7 @@ open class SimpleVpnService : VpnService() {
             ProxyLogDatabase.getInstance(applicationContext).proxyLogDao().getAllCount()
             val dbPath = getDatabasePath(PROXY_LOG_DB_NAME).absolutePath
 
-            Tun2socks.setLocalDNS("223.5.5.5:53")
+            Tun2socks.setLocalDNS("$localDns:53")
             Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), filesDir.absolutePath, dbPath)
 
             sendBroadcast(Intent("vpn_started"))

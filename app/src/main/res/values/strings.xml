@@ -5,6 +5,8 @@
     <string name="preference_config_key">preference_config_key</string>
     <string name="notification_channel_id">notification_channel_id</string>
     <string name="vpn_is_running">vpn_is_running</string>
+    <string name="is_enable_proxy_logging">is_enable_proxy_logging</string>
+    <string name="local_dns">local_dns</string>
     <string name="default_config">
 {\n
     \"log\": {\n

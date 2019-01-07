@@ -10,7 +10,10 @@
         android:title="Save Config" />
     <item
         android:id="@+id/log_btn"
-        android:title="Proxy Logs" />
+        android:title="Proxy Log" />
+    <item
+        android:id="@+id/settings_btn"
+        android:title="Settings" />
     <item
         android:id="@+id/logcat_btn"
         android:title="Logcat" />

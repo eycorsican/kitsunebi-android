@@ -38,6 +38,12 @@
         </activity>
 
         <activity
+            android:name=".ui.SettingsActivity"
+            android:label="Settings"
+            android:parentActivityName=".ui.MainActivity">
+        </activity>
+
+        <activity
             android:name=".ui.StartVpnActivity"
             android:theme="@style/Theme.Transparent">
         </activity>
