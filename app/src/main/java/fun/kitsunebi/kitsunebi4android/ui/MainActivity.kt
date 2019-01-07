@@ -2,11 +2,12 @@ package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
 import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
+import `fun`.kitsunebi.kitsunebi4android.storage.*
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 
@@ -136,6 +137,16 @@ class MainActivity : AppCompatActivity() {
                     putString(getString(R.string.preference_config_key), prettyText)
                     commit()
                 }
+                return true
+            }
+            R.id.log_btn -> {
+                val intent = Intent(this, ProxyLogActivity::class.java)
+                startActivity(intent)
+                return true
+            }
+            R.id.logcat_btn -> {
+                val intent = Intent(this, LogcatActivity::class.java)
+                startActivity(intent)
                 return true
             }
             R.id.help_btn -> {

@@ -98,13 +98,6 @@
         \"rules\": [\n
             {\n
                 \"domain\": [\n
-                    \"domain:doubleclick.net\"\n
-                ],\n
-                \"outboundTag\": \"block\",\n
-                \"type\": \"field\"\n
-            },\n
-            {\n
-                \"domain\": [\n
                     \"domain:setup.icloud.com\"\n
                 ],\n
                 \"outboundTag\": \"proxy\",\n

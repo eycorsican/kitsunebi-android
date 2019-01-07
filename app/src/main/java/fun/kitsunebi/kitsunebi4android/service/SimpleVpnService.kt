@@ -1,6 +1,9 @@
 package `fun`.kitsunebi.kitsunebi4android.service
 
 import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.storage.PROXY_LOG_DB_NAME
+import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog
+import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLogDatabase
 import android.annotation.TargetApi
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -12,6 +15,7 @@ import android.os.ParcelFileDescriptor
 import tun2socks.PacketFlow
 import tun2socks.Tun2socks
 import tun2socks.VpnService as Tun2socksVpnService
+import tun2socks.DBService as Tun2socksDBService
 import kotlin.concurrent.thread
 import com.beust.klaxon.Klaxon
 import java.io.FileInputStream
@@ -77,7 +81,6 @@ open class SimpleVpnService: VpnService() {
                         sendBroadcast(Intent("pong"))
                     }
                 }
-
             }
         }
     }
@@ -104,6 +107,24 @@ open class SimpleVpnService: VpnService() {
         private val vpnService = service
         override fun protect(fd: Long): Boolean {
             return vpnService.protect(fd.toInt())
+        }
+    }
+
+    class DBService(db: ProxyLogDatabase): Tun2socksDBService {
+        private val db = db
+        override fun insertProxyLog(p0: String?, p1: String?, p2: Long, p3: Long, p4: Int, p5: Int, p6: Int, p7: Int, p8: String?, p9: String?, p10: Int) {
+            db.proxyLogDao().insertAll(ProxyLog(0,
+                    p0,
+                    p1,
+                    p2,
+                    p3,
+                    p4,
+                    p5,
+                    p6,
+                    p7,
+                    p8,
+                    p9,
+                    p10))
         }
     }
 
@@ -151,7 +172,6 @@ open class SimpleVpnService: VpnService() {
                 return@thread
             }
 
-
             pfd = Builder().setSession("vv")
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
@@ -179,6 +199,7 @@ open class SimpleVpnService: VpnService() {
 
             val flow = Flow(outputStream)
             val service = Service(this)
+            val dbService = DBService(ProxyLogDatabase.getInstance(applicationContext))
 
             val files = filesDir.list()
             if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
@@ -193,8 +214,11 @@ open class SimpleVpnService: VpnService() {
                 fos2.close()
             }
 
+            ProxyLogDatabase.getInstance(applicationContext).proxyLogDao().getAllCount()
+            val dbPath = getDatabasePath(PROXY_LOG_DB_NAME).absolutePath
+
             Tun2socks.setLocalDNS("223.5.5.5:53")
-            Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath)
+            Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), filesDir.absolutePath, dbPath)
 
             sendBroadcast(Intent("vpn_started"))
 
