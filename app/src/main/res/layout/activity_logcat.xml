@@ -8,6 +8,7 @@
         android:id="@+id/logcat_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="bottom"
         android:scrollbars="vertical"
         android:text="TextView" />
 </androidx.constraintlayout.widget.ConstraintLayout>
