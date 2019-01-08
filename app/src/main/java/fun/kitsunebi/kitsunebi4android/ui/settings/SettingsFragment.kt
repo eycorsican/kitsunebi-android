@@ -1,4 +1,4 @@
-package `fun`.kitsunebi.kitsunebi4android.ui
+package `fun`.kitsunebi.kitsunebi4android.ui.settings
 
 import `fun`.kitsunebi.kitsunebi4android.R
 import android.content.Context

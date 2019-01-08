@@ -40,5 +40,23 @@ open class Preferences {
                 return sharedPref.getBoolean(k, false)
             }
         }
+
+        fun putInt(context: Context, k: String, v: Int) {
+            val sharedPref = context.getSharedPreferences(context.getString(R.string.config_preference), Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putInt(k, v)
+                commit()
+            }
+        }
+
+        fun getInt(context: Context, k: String, default: Int?): Int {
+            val sharedPref = context.getSharedPreferences(
+                    context.getString(R.string.config_preference), Context.MODE_PRIVATE)
+            if (default != null) {
+                return sharedPref.getInt(k, default!!)
+            } else {
+                return sharedPref.getInt(k, 0)
+            }
+        }
     }
 }

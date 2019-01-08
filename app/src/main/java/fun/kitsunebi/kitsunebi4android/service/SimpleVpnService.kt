@@ -13,7 +13,6 @@ import android.content.IntentFilter
 import android.net.*
 import android.os.Build
 import android.os.ParcelFileDescriptor
-import android.preference.PreferenceManager
 import com.beust.klaxon.Klaxon
 import tun2socks.PacketFlow
 import tun2socks.Tun2socks
@@ -188,13 +187,36 @@ open class SimpleVpnService : VpnService() {
 
             val localDns = Preferences.getString(applicationContext, getString(R.string.local_dns), null)
 
-            pfd = Builder().setSession("vv")
+            val builder = Builder().setSession("vv")
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
                     .addDnsServer(localDns)
                     .addSearchDomain("local")
                     .addRoute("0.0.0.0", 0)
-                    .establish()
+
+            val isEnablePerAppVpn = Preferences.getBool(applicationContext, getString(R.string.is_enable_per_app_vpn), null)
+            @TargetApi(21)
+            if (isEnablePerAppVpn) {
+                val perAppMode = Preferences.getString(applicationContext, getString(R.string.per_app_mode), null)
+                when (Integer.parseInt(perAppMode)) {
+                    0 -> {
+                        val allowedAppList = Preferences.getString(applicationContext, getString(R.string.per_app_allowed_app_list), null)
+                        for (packageName in allowedAppList.split(",")) {
+                            builder.addAllowedApplication(packageName)
+                        }
+                    }
+                    1 -> {
+                        val disallowedAppList = Preferences.getString(applicationContext, getString(R.string.per_app_disallowed_app_list), null)
+                        for (packageName in disallowedAppList.split(",")) {
+                            builder.addDisallowedApplication(packageName)
+                        }
+                    }
+                    else -> {
+                    }
+                }
+            }
+
+            pfd = builder.establish()
 
             // Put the tunFd in blocking mode. Since we are reading packets from this fd in the
             // main loop, failing to do this will cause very high CPU utilization, which is

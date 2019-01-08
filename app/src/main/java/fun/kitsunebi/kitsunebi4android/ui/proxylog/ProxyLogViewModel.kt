@@ -1,4 +1,4 @@
-package `fun`.kitsunebi.kitsunebi4android.ui
+package `fun`.kitsunebi.kitsunebi4android.ui.proxylog
 
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
 import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog

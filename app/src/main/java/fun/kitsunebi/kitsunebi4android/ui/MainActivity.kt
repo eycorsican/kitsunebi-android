@@ -3,6 +3,9 @@ package `fun`.kitsunebi.kitsunebi4android.ui
 import `fun`.kitsunebi.kitsunebi4android.R
 import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
+import `fun`.kitsunebi.kitsunebi4android.ui.perapp.PerAppActivity
+import `fun`.kitsunebi.kitsunebi4android.ui.proxylog.ProxyLogActivity
+import `fun`.kitsunebi.kitsunebi4android.ui.settings.SettingsActivity
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.BroadcastReceiver

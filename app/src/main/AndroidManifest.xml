@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -26,7 +25,7 @@
         </activity>
 
         <activity
-            android:name=".ui.ProxyLogActivity"
+            android:name=".ui.proxylog.ProxyLogActivity"
             android:label="Proxy Logs"
             android:parentActivityName=".ui.MainActivity">
         </activity>
@@ -38,7 +37,7 @@
         </activity>
 
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".ui.settings.SettingsActivity"
             android:label="Settings"
             android:parentActivityName=".ui.MainActivity">
         </activity>
@@ -46,6 +45,18 @@
         <activity
             android:name=".ui.StartVpnActivity"
             android:theme="@style/Theme.Transparent">
+        </activity>
+
+        <activity
+            android:name=".ui.perapp.PerAppActivity"
+            android:label="Per-App VPN"
+            android:parentActivityName=".ui.settings.SettingsActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.perapp.AppListActivity"
+            android:label="App List"
+            android:parentActivityName=".ui.perapp.PerAppActivity">
         </activity>
 
         <service
