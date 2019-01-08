@@ -7,7 +7,7 @@ import androidx.room.*
 
 public const val PROXY_LOG_DB_NAME = "proxy_log.sqlite3"
 
-@Entity(tableName = "proxy_log")
+@Entity(tableName = "proxy_log", indices = arrayOf(Index(value = ["record_type", "end_time"])))
 data class ProxyLog(
         @PrimaryKey(autoGenerate = true) var id: Int,
         @ColumnInfo(name = "target") var target: String?,
@@ -31,6 +31,9 @@ interface ProxyLogDao {
     @Query("SELECT * FROM proxy_log ORDER BY end_time DESC")
     fun getAllPaged(): DataSource.Factory<Int, ProxyLog>
 
+    @Query("SELECT * FROM proxy_log WHERE record_type != 1 ORDER BY end_time DESC")
+    fun getAllNonDnsPaged(): DataSource.Factory<Int, ProxyLog>
+
     @Insert
     fun insertAll(proxyLogs: ProxyLog)
 
@@ -44,7 +47,7 @@ interface ProxyLogDao {
     fun getAllCount(): Int
 }
 
-@Database(entities = arrayOf(ProxyLog::class), version = 4)
+@Database(entities = arrayOf(ProxyLog::class), version = 5)
 abstract class ProxyLogDatabase : RoomDatabase() {
     abstract fun proxyLogDao(): ProxyLogDao
 

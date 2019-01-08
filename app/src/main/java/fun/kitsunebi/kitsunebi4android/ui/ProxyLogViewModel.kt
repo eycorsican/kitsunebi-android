@@ -1,5 +1,6 @@
 package `fun`.kitsunebi.kitsunebi4android.ui
 
+import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
 import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog
 import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLogDatabase
 import android.app.Application
@@ -15,11 +16,18 @@ class ProxyLogViewModel constructor(application: Application)
     private var proxyLogLiveData: LiveData<PagedList<ProxyLog>>
 
     init {
-        val factory: DataSource.Factory<Int, ProxyLog> =
-                ProxyLogDatabase.getInstance(getApplication()).proxyLogDao().getAllPaged()
+        lateinit var factory: DataSource.Factory<Int, ProxyLog>
+
+        // TODO using global constant string
+        val isHideDns = Preferences.getBool(getApplication(), "is_hide_dns_logs", null)
+        if (isHideDns) {
+            factory = ProxyLogDatabase.getInstance(getApplication()).proxyLogDao().getAllNonDnsPaged()
+        } else {
+            factory = ProxyLogDatabase.getInstance(getApplication()).proxyLogDao().getAllPaged()
+        }
 
         val pagedListBuilder: LivePagedListBuilder<Int, ProxyLog> = LivePagedListBuilder<Int, ProxyLog>(factory,
-                50)
+                30)
         proxyLogLiveData = pagedListBuilder.build()
     }
 

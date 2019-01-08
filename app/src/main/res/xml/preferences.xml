@@ -6,6 +6,12 @@
         android:key="@string/is_enable_proxy_logging"
         android:summary="You may want to disable logging for saving battery life."
         android:title="Enable proxy logging" />
+    <SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:iconSpaceReserved="false"
+        android:key="@string/is_hide_dns_logs"
+        android:summary="Hide DNS logs in proxy log."
+        android:title="Hide DNS logs" />
     <EditTextPreference
         android:defaultValue="223.5.5.5"
         android:iconSpaceReserved="false"
