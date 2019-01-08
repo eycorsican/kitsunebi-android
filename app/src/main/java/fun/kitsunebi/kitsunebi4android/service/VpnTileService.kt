@@ -83,13 +83,13 @@ class VpnTileService : TileService() {
 //        }
         qsTile.updateTile()
 
-        sendBroadcast(Intent("ping"))
-
         registerReceiver(broadcastReceiver, IntentFilter("vpn_stopped"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_started"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err_dns"))
         registerReceiver(broadcastReceiver, IntentFilter("pong"))
+
+        sendBroadcast(Intent("ping"))
     }
 
     override fun onStopListening() {
