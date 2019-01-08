@@ -185,9 +185,9 @@ open class SimpleVpnService : VpnService() {
                 return@thread
             }
 
-            val localDns = Preferences.getString(applicationContext, getString(R.string.local_dns), null)
+            val localDns = Preferences.getString(applicationContext, getString(R.string.local_dns), "223.5.5.5")
 
-            val builder = Builder().setSession("vv")
+            val builder = Builder().setSession("Kitsunebi")
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
                     .addDnsServer(localDns)

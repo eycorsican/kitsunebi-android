@@ -8,9 +8,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_kitsunebi"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_kitsunebi"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
@@ -72,7 +72,7 @@
             android:enabled="true"
             android:exported="true"
             android:label="Kitsunebi"
-            android:icon="@drawable/ic_v"
+            android:icon="@drawable/ic_kitsunebi_tile"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action
