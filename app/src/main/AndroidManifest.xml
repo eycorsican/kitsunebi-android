@@ -6,16 +6,15 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_kitsunebi"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_kitsunebi"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="fun.kitsunebi.kitsunebi4android.ui.MainActivity"
+            android:name=".ui.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -25,11 +24,59 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.proxylog.ProxyLogActivity"
+            android:label="Proxy Logs"
+            android:parentActivityName=".ui.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.LogcatActivity"
+            android:label="Logcat"
+            android:parentActivityName=".ui.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:label="Settings"
+            android:parentActivityName=".ui.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.StartVpnActivity"
+            android:theme="@style/Theme.Transparent">
+        </activity>
+
+        <activity
+            android:name=".ui.perapp.PerAppActivity"
+            android:label="Per-App VPN"
+            android:parentActivityName=".ui.settings.SettingsActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.perapp.AppListActivity"
+            android:label="App List"
+            android:parentActivityName=".ui.perapp.PerAppActivity">
+        </activity>
+
         <service
-            android:name="fun.kitsunebi.kitsunebi4android.service.SimpleVpnService"
+            android:name=".service.SimpleVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE" >
             <intent-filter>
                 <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.VpnTileService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Kitsunebi"
+            android:icon="@drawable/ic_kitsunebi_tile"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
             </intent-filter>
         </service>
 

@@ -4,10 +4,19 @@
     tools:context="fun.kitsunebi.kitsunebi4android.ui.MainActivity">
     <item
         android:id="@+id/format_btn"
-        android:title="Format" />
+        android:title="Format JSON" />
     <item
         android:id="@+id/save_btn"
-        android:title="Save" />
+        android:title="Save Config" />
+    <item
+        android:id="@+id/log_btn"
+        android:title="Proxy Log" />
+    <item
+        android:id="@+id/settings_btn"
+        android:title="Settings" />
+    <item
+        android:id="@+id/logcat_btn"
+        android:title="Logcat" />
     <item
         android:id="@+id/help_btn"
         android:title="Help" />

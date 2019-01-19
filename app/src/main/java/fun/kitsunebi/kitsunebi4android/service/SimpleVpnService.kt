@@ -1,6 +1,10 @@
 package `fun`.kitsunebi.kitsunebi4android.service
 
 import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.storage.PROXY_LOG_DB_NAME
+import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
+import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog
+import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLogDatabase
 import android.annotation.TargetApi
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,23 +13,28 @@ import android.content.IntentFilter
 import android.net.*
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import com.beust.klaxon.Klaxon
 import tun2socks.PacketFlow
 import tun2socks.Tun2socks
-import tun2socks.VpnService as Tun2socksVpnService
-import kotlin.concurrent.thread
-import com.beust.klaxon.Klaxon
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
+import kotlin.concurrent.thread
+import tun2socks.DBService as Tun2socksDBService
+import tun2socks.VpnService as Tun2socksVpnService
 
-open class SimpleVpnService: VpnService() {
+
+open class SimpleVpnService : VpnService() {
+
     private var configString: String = ""
     private var pfd: ParcelFileDescriptor? = null
     private var inputStream: FileInputStream? = null
     private var outputStream: FileOutputStream? = null
     private var buffer = ByteBuffer.allocate(1501)
-    var isStopped = false
-    
+    @Volatile
+    private var running = false
+    private lateinit var bgThread: Thread
+
     private val cm by lazy { this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
 
     @TargetApi(28)
@@ -49,9 +58,11 @@ open class SimpleVpnService: VpnService() {
         override fun onAvailable(network: Network) {
             underlyingNetwork = network
         }
+
         override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities?) {
             underlyingNetwork = network
         }
+
         override fun onLost(network: Network) {
             underlyingNetwork = null
         }
@@ -61,6 +72,7 @@ open class SimpleVpnService: VpnService() {
                       val outboundDetour: List<Outbound>? = null,
                       val outbound: Outbound? = null,
                       val dns: Dns? = null)
+
     data class Dns(val servers: List<Any>? = null)
     data class Outbound(val protocol: String = "", val settings: Settings? = null)
     data class Settings(val vnext: List<Server?>? = null)
@@ -73,48 +85,70 @@ open class SimpleVpnService: VpnService() {
                     stopVPN()
                 }
                 "ping" -> {
-                    if (!isStopped) {
+                    if (running) {
                         sendBroadcast(Intent("pong"))
                     }
                 }
-
             }
         }
     }
 
     private fun stopVPN() {
-        isStopped = true
         Tun2socks.stopV2Ray()
         pfd?.close()
         pfd = null
         inputStream = null
         outputStream = null
+        running = false
         sendBroadcast(Intent("vpn_stopped"))
+        Preferences.putBool(applicationContext, getString(R.string.vpn_is_running), false)
         stopSelf()
     }
 
-    class Flow(stream: FileOutputStream?): PacketFlow {
+    class Flow(stream: FileOutputStream?) : PacketFlow {
         private val flowOutputStream = stream
         override fun writePacket(pkt: ByteArray?) {
             flowOutputStream?.write(pkt)
         }
     }
 
-    class Service(service: VpnService): Tun2socksVpnService {
+    class Service(service: VpnService) : Tun2socksVpnService {
         private val vpnService = service
         override fun protect(fd: Long): Boolean {
             return vpnService.protect(fd.toInt())
         }
     }
 
+    class DBService(db: ProxyLogDatabase) : Tun2socksDBService {
+        private val db = db
+        override fun insertProxyLog(p0: String?, p1: String?, p2: Long, p3: Long, p4: Int, p5: Int, p6: Int, p7: Int, p8: String?, p9: String?, p10: Int) {
+            db.proxyLogDao().insertAll(ProxyLog(0,
+                    p0,
+                    p1,
+                    p2,
+                    p3,
+                    p4,
+                    p5,
+                    p6,
+                    p7,
+                    p8,
+                    p9,
+                    p10))
+        }
+    }
+
     private fun handlePackets() {
-        while (!isStopped) {
-            val n = inputStream?.read(buffer.array())
-            n?.let { it } ?: return
-            if (n > 0) {
-                buffer.limit(n)
-                Tun2socks.inputPacket(buffer.array())
-                buffer.clear()
+        while (running) {
+            try {
+                val n = inputStream?.read(buffer.array())
+                n?.let { it } ?: return
+                if (n > 0) {
+                    buffer.limit(n)
+                    Tun2socks.inputPacket(buffer.array())
+                    buffer.clear()
+                }
+            } catch (e: Exception) {
+                println("failed to read bytes from TUN fd")
             }
         }
     }
@@ -126,9 +160,9 @@ open class SimpleVpnService: VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        configString = intent?.extras?.get("config").toString()
+        configString = Preferences.getString(applicationContext, getString(R.string.preference_config_key), getString(R.string.default_config))
 
-        thread (start = true) {
+        bgThread = thread(start = true) {
             val config = Klaxon().parse<Config>(configString)
             if (config != null) {
                 if (config.dns == null || config.dns.servers == null || config.dns.servers.size == 0) {
@@ -139,7 +173,7 @@ open class SimpleVpnService: VpnService() {
 
                 config.dns.servers.forEach {
                     val dnsServer = it as? String
-                    if ( dnsServer != null && dnsServer == "localhost") {
+                    if (dnsServer != null && dnsServer == "localhost") {
                         println("using local dns resolver is not allowed since it will cause infinite loop")
                         sendBroadcast(Intent("vpn_start_err_dns"))
                         return@thread
@@ -151,14 +185,38 @@ open class SimpleVpnService: VpnService() {
                 return@thread
             }
 
+            val localDns = Preferences.getString(applicationContext, getString(R.string.local_dns), "223.5.5.5")
 
-            pfd = Builder().setSession("vv")
+            val builder = Builder().setSession("Kitsunebi")
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
-                    .addDnsServer("223.5.5.5")
+                    .addDnsServer(localDns)
                     .addSearchDomain("local")
                     .addRoute("0.0.0.0", 0)
-                    .establish()
+
+            val isEnablePerAppVpn = Preferences.getBool(applicationContext, getString(R.string.is_enable_per_app_vpn), null)
+            @TargetApi(21)
+            if (isEnablePerAppVpn) {
+                val perAppMode = Preferences.getString(applicationContext, getString(R.string.per_app_mode), null)
+                when (Integer.parseInt(perAppMode)) {
+                    0 -> {
+                        val allowedAppList = Preferences.getString(applicationContext, getString(R.string.per_app_allowed_app_list), null)
+                        for (packageName in allowedAppList.split(",")) {
+                            builder.addAllowedApplication(packageName)
+                        }
+                    }
+                    1 -> {
+                        val disallowedAppList = Preferences.getString(applicationContext, getString(R.string.per_app_disallowed_app_list), null)
+                        for (packageName in disallowedAppList.split(",")) {
+                            builder.addDisallowedApplication(packageName)
+                        }
+                    }
+                    else -> {
+                    }
+                }
+            }
+
+            pfd = builder.establish()
 
             // Put the tunFd in blocking mode. Since we are reading packets from this fd in the
             // main loop, failing to do this will cause very high CPU utilization, which is
@@ -179,6 +237,11 @@ open class SimpleVpnService: VpnService() {
 
             val flow = Flow(outputStream)
             val service = Service(this)
+            var dbService: DBService? = null
+            val enableProxyLogging = Preferences.getBool(applicationContext, getString(R.string.is_enable_proxy_logging), null)
+            if (enableProxyLogging) {
+                dbService = DBService(ProxyLogDatabase.getInstance(applicationContext))
+            }
 
             val files = filesDir.list()
             if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
@@ -193,11 +256,16 @@ open class SimpleVpnService: VpnService() {
                 fos2.close()
             }
 
-            Tun2socks.setLocalDNS("223.5.5.5:53")
-            Tun2socks.startV2Ray(flow, service, configString.toByteArray(), filesDir.absolutePath)
+            ProxyLogDatabase.getInstance(applicationContext).proxyLogDao().getAllCount()
+            val dbPath = getDatabasePath(PROXY_LOG_DB_NAME).absolutePath
+
+            Tun2socks.setLocalDNS("$localDns:53")
+            Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), filesDir.absolutePath, dbPath)
 
             sendBroadcast(Intent("vpn_started"))
+            Preferences.putBool(applicationContext, getString(R.string.vpn_is_running), true)
 
+            running = true
             handlePackets()
         }
 

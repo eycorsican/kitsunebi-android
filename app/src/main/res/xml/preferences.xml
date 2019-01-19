@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <Preference
+        android:summary="Configure Per-App VPN."
+        android:title="Per-App VPN"
+        app:iconSpaceReserved="false">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="fun.kitsunebi.kitsunebi4android.ui.perapp.PerAppActivity"
+            android:targetPackage="fun.kitsunebi.kitsunebi4android"></intent>
+    </Preference>
+
+    <SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:key="@string/is_enable_proxy_logging"
+        android:summary="You may want to disable logging for saving battery life."
+        android:title="Proxy logging"
+        app:iconSpaceReserved="false" />
+
+    <SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:key="@string/is_hide_dns_logs"
+        android:summary="Hide DNS logs in proxy log list."
+        android:title="Hide DNS logs"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:defaultValue="223.5.5.5"
+        android:key="@string/local_dns"
+        android:summary="The DNS server that will be used by the freedom outbound (in case you are using AsIs as the freedom outbound's domain strategy) or for resolving domain names of outbound servers, and these DNS requests won't be logged to proxy log. Moreover, non A/AAAA DNS queries from the OS will also be sent to this DNS server, they will be treated as normal UDP traffic."
+        android:title="Local DNS"
+        app:iconSpaceReserved="false"></EditTextPreference>
+</PreferenceScreen>
