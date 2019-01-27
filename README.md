@@ -8,6 +8,10 @@ A fully-featured V2Ray client for Android.
 
 Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
 
+## 扩展功能
+扩展了 v2ray-core 的功能：
+- 新增 Latency Balancing Strategy：[详情及配置看这里](https://gist.github.com/eycorsican/356debc8295e752c1df6ad7286f98ad4)
+
 ## 使用提示
 
 - 配置文件可使用一个常见的 V2Ray JSON 配置
