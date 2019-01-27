@@ -98,11 +98,14 @@ class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLo
                 }
 
                 proxyLog.tag?.let {
-                    when (it.toLowerCase()) {
-                        "proxy", "remote" -> row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorProxyTag))
-                        "direct", "free", "freedom" -> row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorDirectTag))
-                        "block", "reject" -> row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorBlockTag))
-                        else -> row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorDefaultText))
+                    if (it.toLowerCase().contains("proxy")) {
+                        row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorProxyTag))
+                    } else if (it.toLowerCase().contains("direct") || it.toLowerCase().contains("free")) {
+                        row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorDirectTag))
+                    } else if (it.toLowerCase().contains("block") || it.toLowerCase().contains("reject")) {
+                        row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorBlockTag))
+                    } else {
+                        row2_1.setTextColor(ContextCompat.getColor(context, R.color.colorDefaultText))
                     }
                 }
             }
