@@ -13,4 +13,5 @@
     <string name="per_app_disallowed_app_list">per_app_disallowed_app_list</string>
     <string name="allowed_list">Allowed list</string>
     <string name="disallowed_list">Disallowed list</string>
+    <string name="sniffing">sniffing</string>
 </resources>
