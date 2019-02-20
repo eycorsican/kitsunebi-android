@@ -59,6 +59,12 @@
             android:parentActivityName=".ui.perapp.PerAppActivity">
         </activity>
 
+        <activity
+            android:name=".ui.SubscribeConfigActivity"
+            android:label="Subscribe Config"
+            android:parentActivityName=".ui.MainActivity">
+        </activity>
+
         <service
             android:name=".service.SimpleVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE" >

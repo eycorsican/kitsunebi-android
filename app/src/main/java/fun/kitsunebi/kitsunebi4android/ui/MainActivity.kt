@@ -1,6 +1,7 @@
 package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.common.Constants
 import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
 import `fun`.kitsunebi.kitsunebi4android.ui.perapp.PerAppActivity
@@ -84,7 +85,7 @@ class MainActivity : AppCompatActivity() {
 
         sendBroadcast(Intent("ping"))
 
-        var configString = Preferences.getString(applicationContext, getString(R.string.preference_config_key), getString(R.string.default_config))
+        var configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
         configString?.let {
             formatJsonString(it).let {
                 configView.setText(it, TextView.BufferType.EDITABLE)
@@ -96,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 starting = true
                 fab.setImageResource(android.R.drawable.ic_media_ff)
                 configString = configView.text.toString()
-                Preferences.putString(applicationContext, getString(R.string.preference_config_key), configString)
+                Preferences.putString(applicationContext, Constants.Companion.PREFERENCE_CONFIG_KEY, configString)
                 val intent = VpnService.prepare(this)
                 if (intent != null) {
                     startActivityForResult(intent, 1)
@@ -133,6 +134,11 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
+            R.id.subscribe_config_btn -> {
+                val intent = Intent(this, SubscribeConfigActivity::class.java)
+                startActivity(intent)
+                return true
+            }
             R.id.format_btn -> {
                 val prettyText = formatJsonString(configView.text.toString())
                 prettyText?.let {
@@ -147,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                     showAlert("Invalid JSON")
                     return true
                 }
-                Preferences.putString(applicationContext, getString(R.string.preference_config_key), prettyText)
+                Preferences.putString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, prettyText)
                 return true
             }
             R.id.log_btn -> {

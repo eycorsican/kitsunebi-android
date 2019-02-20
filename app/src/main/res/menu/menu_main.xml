@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="fun.kitsunebi.kitsunebi4android.ui.MainActivity">
     <item
+        android:id="@+id/subscribe_config_btn"
+        android:title="Subscribe Config" />
+    <item
         android:id="@+id/format_btn"
         android:title="Format JSON" />
     <item

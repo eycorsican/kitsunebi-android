@@ -1,6 +1,7 @@
 package `fun`.kitsunebi.kitsunebi4android.service
 
 import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.common.Constants
 import `fun`.kitsunebi.kitsunebi4android.storage.PROXY_LOG_DB_NAME
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
 import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog
@@ -160,7 +161,7 @@ open class SimpleVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        configString = Preferences.getString(applicationContext, getString(R.string.preference_config_key), getString(R.string.default_config))
+        configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
 
         bgThread = thread(start = true) {
             val config = Klaxon().parse<Config>(configString)
