@@ -6,22 +6,17 @@ class Constants {
         val SUBSCRIBE_CONFIG_URL_KEY = "subscribe_config_url_key"
         val DEFAULT_CONFIG = """
             {
-    "log": {
-        "loglevel": "warning"
-    },
     "outbounds": [
         {
             "protocol": "vmess",
             "settings": {
                 "vnext": [
                     {
-                        "address": "yourserver.com",
+                        "address": "1.2.3.4",
                         "port": 10086,
                         "users": [
                             {
-                                "alterId": 10,
-                                "security": "chacha20-poly1305",
-                                "id": "xxxx-xxx-xx-xx-x-xx"
+                                "id": "c48346d7-8723-43eb-87aa-13b1bf9bcdd9"
                             }
                         ]
                     }
@@ -35,46 +30,30 @@ class Constants {
         {
             "protocol": "freedom",
             "settings": {
-                "userLevel": 2018,
                 "domainStrategy": "UseIP"
             },
             "streamSettings": {},
             "tag": "direct"
         },
         {
-            "tag": "block",
             "protocol": "blackhole",
-            "settings": {}
+            "settings": {},
+            "tag": "block"
+        },
+        {
+            "protocol": "dns",
+            "tag": "dns-out"
         }
     ],
-    "policy": {
-        "levels": {
-            "0": {
-                "uplinkOnly": 0,
-                "downlinkOnly": 0,
-                "connIdle": 5,
-                "handshake": 4,
-            	"bufferSize": 4096
-            },
-            "2018": {
-                "uplinkOnly": 0,
-                "downlinkOnly": 0,
-                "connIdle": 5,
-                "handshake": 4,
-            	"bufferSize": 4096
-            }
-        }
-    },
     "dns": {
+        "clientIp": "115.239.211.92",
         "hosts": {
             "localhost": "127.0.0.1"
         },
         "servers": [
-            "223.5.5.5",
             "114.114.114.114",
             {
                 "address": "8.8.8.8",
-                "port": 53,
                 "domains": [
                     "google",
                     "android",
@@ -87,15 +66,35 @@ class Constants {
                     "domain:line-scdn.net",
                     "domain:line.me",
                     "domain:naver.jp"
-                ]
-            },
-            "8.8.4.4"
-        ],
-        "clientIp": "115.239.211.92"
+                ],
+                "port": 53
+            }
+        ]
     },
     "inbounds": [],
+    "log": {
+        "loglevel": "warning"
+    },
+    "policy": {
+        "levels": {
+            "0": {
+                "bufferSize": 4096,
+                "connIdle": 30,
+                "downlinkOnly": 0,
+                "handshake": 4,
+                "uplinkOnly": 0
+            }
+        }
+    },
     "routing": {
+        "domainStrategy": "IPIfNonMatch",
         "rules": [
+            {
+                "network": "udp",
+                "port": 53,
+                "outboundTag": "dns-out",
+                "type": "field"
+            },
             {
                 "domain": [
                     "domain:setup.icloud.com"
@@ -126,9 +125,9 @@ class Constants {
                 "type": "field"
             },
             {
-                "type": "field",
                 "outboundTag": "direct",
-                "port": "123"
+                "port": "123",
+                "type": "field"
             },
             {
                 "domain": [
@@ -193,7 +192,6 @@ class Constants {
                 "type": "field"
             }
         ],
-        "domainStrategy": "IPIfNonMatch",
         "strategy": "rules"
     }
 }
