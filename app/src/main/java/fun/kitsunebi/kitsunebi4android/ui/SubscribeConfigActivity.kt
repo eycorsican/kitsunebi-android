@@ -2,8 +2,8 @@ package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
 import `fun`.kitsunebi.kitsunebi4android.common.Constants
+import `fun`.kitsunebi.kitsunebi4android.common.showAlert
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
-import `fun`.kitsunebi.kitsunebi4android.storage.Preferences.Companion.getString
 import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
@@ -45,6 +45,7 @@ class SubscribeConfigActivity : AppCompatActivity() {
         override fun onPostExecute(result: String?) {
             if (result != null) {
                 Preferences.putString(ctx, Constants.PREFERENCE_CONFIG_KEY, result)
+                showAlert(ctx, "Configuration updated!")
             }
         }
     }

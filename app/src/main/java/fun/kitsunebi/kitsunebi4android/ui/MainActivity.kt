@@ -2,13 +2,12 @@ package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
 import `fun`.kitsunebi.kitsunebi4android.common.Constants
+import `fun`.kitsunebi.kitsunebi4android.common.showAlert
 import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
-import `fun`.kitsunebi.kitsunebi4android.ui.perapp.PerAppActivity
 import `fun`.kitsunebi.kitsunebi4android.ui.proxylog.ProxyLogActivity
 import `fun`.kitsunebi.kitsunebi4android.ui.settings.SettingsActivity
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     //    var mNotificationManager: NotificationManager? = null
 
     val broadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(contxt: Context?, intent: Intent?) {
+        override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 "vpn_stopped" -> {
                     running = false
@@ -53,13 +52,17 @@ class MainActivity : AppCompatActivity() {
                     running = false
                     starting = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
-                    showAlert("Start VPN service failed")
+                    context?.let {
+                        showAlert(it, "Start VPN service failed")
+                    }
                 }
                 "vpn_start_err_dns" -> {
                     running = false
                     starting = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
-                    showAlert("Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
+                    context?.let {
+                        showAlert(it, "Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
+                    }
                 }
                 "pong" -> {
                     fab.setImageResource(android.R.drawable.ic_media_pause)
@@ -150,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                 val config = configView.text.toString()
                 val prettyText = formatJsonString(config)
                 if (prettyText == null) {
-                    showAlert("Invalid JSON")
+                    showAlert(this, "Invalid JSON")
                     return true
                 }
                 Preferences.putString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, prettyText)
@@ -189,16 +192,9 @@ class MainActivity : AppCompatActivity() {
         return try {
             JSONObject(json).toString(2)
         } catch (e: JSONException) {
-            showAlert("Invalid JSON")
+            showAlert(this, "Invalid JSON")
             return null
         }
-    }
-
-    fun showAlert(msg: String) {
-        val dialog = AlertDialog.Builder(this).setTitle("Message").setMessage(msg)
-                .setPositiveButton("Ok", { dialog, i ->
-                })
-        dialog.show()
     }
 
 //    private fun startNotification() {
