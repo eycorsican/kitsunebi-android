@@ -192,7 +192,6 @@ open class SimpleVpnService : VpnService() {
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
                     .addDnsServer(localDns)
-                    .addSearchDomain("local")
                     .addRoute("0.0.0.0", 0)
 
             val isEnablePerAppVpn = Preferences.getBool(applicationContext, getString(R.string.is_enable_per_app_vpn), null)
