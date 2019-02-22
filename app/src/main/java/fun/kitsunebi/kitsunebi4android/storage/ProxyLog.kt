@@ -31,7 +31,7 @@ interface ProxyLogDao {
     @Query("SELECT * FROM proxy_log ORDER BY end_time DESC")
     fun getAllPaged(): DataSource.Factory<Int, ProxyLog>
 
-    @Query("SELECT * FROM proxy_log WHERE record_type != 1 ORDER BY end_time DESC")
+    @Query("SELECT * FROM proxy_log WHERE record_type != 1 AND target NOT LIKE 'udp:%:53' ORDER BY end_time DESC")
     fun getAllNonDnsPaged(): DataSource.Factory<Int, ProxyLog>
 
     @Insert
