@@ -49,6 +49,12 @@
     <Preference
         app:key="core_version"
         app:title="Core Version"
-        app:summary="4.17.0"
+        app:summary="@string/coreName"
+        app:iconSpaceReserved="false"/>
+
+    <Preference
+        app:key="app_version"
+        app:title="Version"
+        app:summary="@string/versionName"
         app:iconSpaceReserved="false"/>
 </PreferenceScreen>
