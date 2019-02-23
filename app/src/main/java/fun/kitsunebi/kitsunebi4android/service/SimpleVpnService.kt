@@ -267,8 +267,10 @@ open class SimpleVpnService : VpnService() {
             }
             sniffing = sniffings.joinToString(",")
 
+            val inboundTag = Preferences.getString(applicationContext, getString(R.string.inbound_tag), "tun2socks")
+
             Tun2socks.setLocalDNS("$localDns:53")
-            val ret = Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), "tun2socks", sniffing, filesDir.absolutePath)
+            val ret = Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), inboundTag, sniffing, filesDir.absolutePath)
             if (ret.toInt() != 0) {
                 sendBroadcast(Intent("vpn_start_err"))
                 return@thread

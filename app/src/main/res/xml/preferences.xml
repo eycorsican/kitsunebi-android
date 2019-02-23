@@ -38,4 +38,17 @@
         android:summary="Sniffing settings for the tun2socks inbound."
         android:title="Sniffing"
         app:iconSpaceReserved="false"></EditTextPreference>
+
+    <EditTextPreference
+        android:defaultValue="tun2socks"
+        android:key="@string/inbound_tag"
+        android:summary="Inbound tag for distinguishing traffic coming from tun2socks in routing procedure."
+        android:title="Inbound Tag"
+        app:iconSpaceReserved="false"></EditTextPreference>
+
+    <Preference
+        app:key="core_version"
+        app:title="Core Version"
+        app:summary="4.17.0"
+        app:iconSpaceReserved="false"/>
 </PreferenceScreen>
