@@ -258,10 +258,17 @@ open class SimpleVpnService : VpnService() {
 
             ProxyLogDatabase.getInstance(applicationContext).proxyLogDao().getAllCount()
 
-
+            var sniffing = Preferences.getString(applicationContext, getString(R.string.sniffing), "http,tls")
+            // Just ensure no whitespaces in the the string.
+            val sniffingList = sniffing.split(",")
+            var sniffings = ArrayList<String>()
+            for (s in sniffingList) {
+                sniffings.add(s.trim())
+            }
+            sniffing = sniffings.joinToString(",")
 
             Tun2socks.setLocalDNS("$localDns:53")
-            val ret = Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), filesDir.absolutePath, "127.0.0.1", 1086)
+            val ret = Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), "tun2socks", sniffing, filesDir.absolutePath)
             if (ret.toInt() != 0) {
                 sendBroadcast(Intent("vpn_start_err"))
                 return@thread
