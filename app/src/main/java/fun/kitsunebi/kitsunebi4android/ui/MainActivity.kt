@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
     var running = false
     private var starting = false
     private var stopping = false
+    private lateinit var configString: String
+
 //    val mNotificationId = 1
     //    var mNotificationManager: NotificationManager? = null
 
@@ -81,6 +83,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateUI() {
+        configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
+        configString?.let {
+            formatJsonString(it).let {
+                configView.setText(it, TextView.BufferType.EDITABLE)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -100,12 +111,7 @@ class MainActivity : AppCompatActivity() {
 
         sendBroadcast(Intent("ping"))
 
-        var configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
-        configString?.let {
-            formatJsonString(it).let {
-                configView.setText(it, TextView.BufferType.EDITABLE)
-            }
-        }
+        updateUI()
 
         fab.setOnClickListener { view ->
             if (!running && !starting) {
@@ -135,6 +141,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        updateUI()
         sendBroadcast(Intent("ping"))
     }
 
