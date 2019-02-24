@@ -64,6 +64,14 @@ class MainActivity : AppCompatActivity() {
                         showAlert(it, "Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
                     }
                 }
+                "vpn_start_err_config" -> {
+                    running = false
+                    starting = false
+                    fab.setImageResource(android.R.drawable.ic_media_play)
+                    context?.let {
+                        showAlert(it, "Start VPN service failed: Invalid V2Ray config.")
+                    }
+                }
                 "pong" -> {
                     fab.setImageResource(android.R.drawable.ic_media_pause)
                     running = true
@@ -82,8 +90,12 @@ class MainActivity : AppCompatActivity() {
 
         registerReceiver(broadcastReceiver, IntentFilter("vpn_stopped"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_started"))
+
+        // TODO make a list
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err_dns"))
+        registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err_config"))
+
         registerReceiver(broadcastReceiver, IntentFilter("pong"))
 
         sendBroadcast(Intent("ping"))

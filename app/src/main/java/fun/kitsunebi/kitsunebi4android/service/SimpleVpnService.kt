@@ -164,11 +164,16 @@ open class SimpleVpnService : VpnService() {
         configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
 
         bgThread = thread(start = true) {
-            val config = Klaxon().parse<Config>(configString)
+            val config = try { Klaxon().parse<Config>(configString) } catch (e: Exception) {
+                sendBroadcast(android.content.Intent("vpn_start_err_config"))
+                stopVPN()
+                return@thread
+            }
             if (config != null) {
                 if (config.dns == null || config.dns.servers == null || config.dns.servers.size == 0) {
                     println("must configure dns servers since v2ray will use localhost if there isn't any dns servers")
                     sendBroadcast(Intent("vpn_start_err_dns"))
+                    stopVPN()
                     return@thread
                 }
 
@@ -177,12 +182,14 @@ open class SimpleVpnService : VpnService() {
                     if (dnsServer != null && dnsServer == "localhost") {
                         println("using local dns resolver is not allowed since it will cause infinite loop")
                         sendBroadcast(Intent("vpn_start_err_dns"))
+                        stopVPN()
                         return@thread
                     }
                 }
             } else {
                 println("parsing v2ray config failed")
                 sendBroadcast(Intent("vpn_start_err"))
+                stopVPN()
                 return@thread
             }
 
@@ -225,6 +232,7 @@ open class SimpleVpnService : VpnService() {
             if ((pfd == null) || !Tun2socks.setNonblock(pfd!!.fd.toLong(), false)) {
                 println("failed to put tunFd in blocking mode")
                 sendBroadcast(Intent("vpn_start_err"))
+                stopVPN()
                 return@thread
             }
 
@@ -272,7 +280,8 @@ open class SimpleVpnService : VpnService() {
             Tun2socks.setLocalDNS("$localDns:53")
             val ret = Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), inboundTag, sniffing, filesDir.absolutePath)
             if (ret.toInt() != 0) {
-                sendBroadcast(Intent("vpn_start_err"))
+                sendBroadcast(Intent("vpn_start_err_config"))
+                stopVPN()
                 return@thread
             }
 
