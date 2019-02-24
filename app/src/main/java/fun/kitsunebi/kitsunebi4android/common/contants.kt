@@ -16,7 +16,7 @@ class Constants {
                         "port": 10086,
                         "users": [
                             {
-                                "id": "c48346d7-8723-43eb-87aa-13b1bf9bcdd9"
+                                "id": "0e8575fb-a71f-455b-877f-b74e19d3f495"
                             }
                         ]
                     }
@@ -40,10 +40,10 @@ class Constants {
             "settings": {},
             "tag": "block"
         },
-        {
-            "protocol": "dns",
-            "tag": "dns-out"
-        }
+	{
+	    "protocol": "dns",
+	    "tag": "dns-out"
+	}
     ],
     "dns": {
         "clientIp": "115.239.211.92",
@@ -71,7 +71,6 @@ class Constants {
             }
         ]
     },
-    "inbounds": [],
     "log": {
         "loglevel": "warning"
     },
@@ -90,6 +89,7 @@ class Constants {
         "domainStrategy": "IPIfNonMatch",
         "rules": [
             {
+				"inboundTag": ["tun2socks"],
                 "network": "udp",
                 "port": 53,
                 "outboundTag": "dns-out",
