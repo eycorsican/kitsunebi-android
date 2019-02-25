@@ -252,17 +252,28 @@ open class SimpleVpnService : VpnService() {
             }
 
             val files = filesDir.list()
-            if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
-                val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
-                val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
-                fos.write(geoipBytes)
-                fos.close()
+            // FIXME  copy only when update
+            val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
+            val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
+            fos.write(geoipBytes)
+            fos.close()
 
-                val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
-                val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
-                fos2.write(geositeBytes)
-                fos2.close()
-            }
+            val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
+            val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
+            fos2.write(geositeBytes)
+            fos2.close()
+
+//            if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
+//                val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
+//                val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
+//                fos.write(geoipBytes)
+//                fos.close()
+//
+//                val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
+//                val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
+//                fos2.write(geositeBytes)
+//                fos2.close()
+//            }
 
             ProxyLogDatabase.getInstance(applicationContext).proxyLogDao().getAllCount()
 
