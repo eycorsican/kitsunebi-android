@@ -23,6 +23,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.json.JSONException
 import org.json.JSONObject
+import android.view.MotionEvent
+import android.view.View.OnTouchListener
+import android.view.View
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -112,6 +117,8 @@ class MainActivity : AppCompatActivity() {
         sendBroadcast(Intent("ping"))
 
         updateUI()
+
+        configScroll.isSmoothScrollingEnabled = true
 
         fab.setOnClickListener { view ->
             if (!running && !starting) {
