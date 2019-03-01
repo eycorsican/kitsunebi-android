@@ -1,6 +1,7 @@
 package `fun`.kitsunebi.kitsunebi4android.service
 
 import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.common.Constants
 import `fun`.kitsunebi.kitsunebi4android.storage.PROXY_LOG_DB_NAME
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
 import `fun`.kitsunebi.kitsunebi4android.storage.ProxyLog
@@ -160,14 +161,19 @@ open class SimpleVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        configString = Preferences.getString(applicationContext, getString(R.string.preference_config_key), getString(R.string.default_config))
+        configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
 
         bgThread = thread(start = true) {
-            val config = Klaxon().parse<Config>(configString)
+            val config = try { Klaxon().parse<Config>(configString) } catch (e: Exception) {
+                sendBroadcast(android.content.Intent("vpn_start_err_config"))
+                stopVPN()
+                return@thread
+            }
             if (config != null) {
                 if (config.dns == null || config.dns.servers == null || config.dns.servers.size == 0) {
                     println("must configure dns servers since v2ray will use localhost if there isn't any dns servers")
                     sendBroadcast(Intent("vpn_start_err_dns"))
+                    stopVPN()
                     return@thread
                 }
 
@@ -176,12 +182,14 @@ open class SimpleVpnService : VpnService() {
                     if (dnsServer != null && dnsServer == "localhost") {
                         println("using local dns resolver is not allowed since it will cause infinite loop")
                         sendBroadcast(Intent("vpn_start_err_dns"))
+                        stopVPN()
                         return@thread
                     }
                 }
             } else {
                 println("parsing v2ray config failed")
                 sendBroadcast(Intent("vpn_start_err"))
+                stopVPN()
                 return@thread
             }
 
@@ -191,7 +199,6 @@ open class SimpleVpnService : VpnService() {
                     .setMtu(1500)
                     .addAddress("10.233.233.233", 30)
                     .addDnsServer(localDns)
-                    .addSearchDomain("local")
                     .addRoute("0.0.0.0", 0)
 
             val isEnablePerAppVpn = Preferences.getBool(applicationContext, getString(R.string.is_enable_per_app_vpn), null)
@@ -225,6 +232,7 @@ open class SimpleVpnService : VpnService() {
             if ((pfd == null) || !Tun2socks.setNonblock(pfd!!.fd.toLong(), false)) {
                 println("failed to put tunFd in blocking mode")
                 sendBroadcast(Intent("vpn_start_err"))
+                stopVPN()
                 return@thread
             }
 
@@ -244,23 +252,49 @@ open class SimpleVpnService : VpnService() {
             }
 
             val files = filesDir.list()
-            if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
-                val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
-                val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
-                fos.write(geoipBytes)
-                fos.close()
+            // FIXME  copy only when update
+            val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
+            val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
+            fos.write(geoipBytes)
+            fos.close()
 
-                val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
-                val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
-                fos2.write(geositeBytes)
-                fos2.close()
-            }
+            val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
+            val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
+            fos2.write(geositeBytes)
+            fos2.close()
+
+//            if (!files.contains("geoip.dat") || !files.contains("geosite.dat")) {
+//                val geoipBytes = resources.openRawResource(R.raw.geoip).readBytes()
+//                val fos = openFileOutput("geoip.dat", Context.MODE_PRIVATE)
+//                fos.write(geoipBytes)
+//                fos.close()
+//
+//                val geositeBytes = resources.openRawResource(R.raw.geosite).readBytes()
+//                val fos2 = openFileOutput("geosite.dat", Context.MODE_PRIVATE)
+//                fos2.write(geositeBytes)
+//                fos2.close()
+//            }
 
             ProxyLogDatabase.getInstance(applicationContext).proxyLogDao().getAllCount()
-            val dbPath = getDatabasePath(PROXY_LOG_DB_NAME).absolutePath
+
+            var sniffing = Preferences.getString(applicationContext, getString(R.string.sniffing), "http,tls")
+            // Just ensure no whitespaces in the the string.
+            val sniffingList = sniffing.split(",")
+            var sniffings = ArrayList<String>()
+            for (s in sniffingList) {
+                sniffings.add(s.trim())
+            }
+            sniffing = sniffings.joinToString(",")
+
+            val inboundTag = Preferences.getString(applicationContext, getString(R.string.inbound_tag), "tun2socks")
 
             Tun2socks.setLocalDNS("$localDns:53")
-            Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), filesDir.absolutePath, dbPath)
+            val ret = Tun2socks.startV2Ray(flow, service, dbService, configString.toByteArray(), inboundTag, sniffing, filesDir.absolutePath)
+            if (ret.toInt() != 0) {
+                sendBroadcast(Intent("vpn_start_err_config"))
+                stopVPN()
+                return@thread
+            }
 
             sendBroadcast(Intent("vpn_started"))
             Preferences.putBool(applicationContext, getString(R.string.vpn_is_running), true)

@@ -16,7 +16,8 @@
         <activity
             android:name=".ui.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -57,6 +58,12 @@
             android:name=".ui.perapp.AppListActivity"
             android:label="App List"
             android:parentActivityName=".ui.perapp.PerAppActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.SubscribeConfigActivity"
+            android:label="Subscribe Config"
+            android:parentActivityName=".ui.MainActivity">
         </activity>
 
         <service

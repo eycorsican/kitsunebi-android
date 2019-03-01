@@ -1,13 +1,13 @@
 package `fun`.kitsunebi.kitsunebi4android.ui
 
 import `fun`.kitsunebi.kitsunebi4android.R
+import `fun`.kitsunebi.kitsunebi4android.common.Constants
+import `fun`.kitsunebi.kitsunebi4android.common.showAlert
 import `fun`.kitsunebi.kitsunebi4android.service.SimpleVpnService
 import `fun`.kitsunebi.kitsunebi4android.storage.Preferences
-import `fun`.kitsunebi.kitsunebi4android.ui.perapp.PerAppActivity
 import `fun`.kitsunebi.kitsunebi4android.ui.proxylog.ProxyLogActivity
 import `fun`.kitsunebi.kitsunebi4android.ui.settings.SettingsActivity
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -23,6 +23,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.json.JSONException
 import org.json.JSONObject
+import android.view.MotionEvent
+import android.view.View.OnTouchListener
+import android.view.View
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -30,11 +35,13 @@ class MainActivity : AppCompatActivity() {
     var running = false
     private var starting = false
     private var stopping = false
+    private lateinit var configString: String
+
 //    val mNotificationId = 1
     //    var mNotificationManager: NotificationManager? = null
 
     val broadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(contxt: Context?, intent: Intent?) {
+        override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 "vpn_stopped" -> {
                     running = false
@@ -52,19 +59,40 @@ class MainActivity : AppCompatActivity() {
                     running = false
                     starting = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
-                    showAlert("Start VPN service failed")
+                    context?.let {
+                        showAlert(it, "Start VPN service failed")
+                    }
                 }
                 "vpn_start_err_dns" -> {
                     running = false
                     starting = false
                     fab.setImageResource(android.R.drawable.ic_media_play)
-                    showAlert("Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
+                    context?.let {
+                        showAlert(it, "Start VPN service failed: Not configuring DNS right, must has at least 1 dns server and mustn't include \"localhost\"")
+                    }
+                }
+                "vpn_start_err_config" -> {
+                    running = false
+                    starting = false
+                    fab.setImageResource(android.R.drawable.ic_media_play)
+                    context?.let {
+                        showAlert(it, "Start VPN service failed: Invalid V2Ray config.")
+                    }
                 }
                 "pong" -> {
                     fab.setImageResource(android.R.drawable.ic_media_pause)
                     running = true
                     Preferences.putBool(applicationContext, getString(R.string.vpn_is_running), true)
                 }
+            }
+        }
+    }
+
+    private fun updateUI() {
+        configString = Preferences.getString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, Constants.DEFAULT_CONFIG)
+        configString?.let {
+            formatJsonString(it).let {
+                configView.setText(it, TextView.BufferType.EDITABLE)
             }
         }
     }
@@ -78,25 +106,26 @@ class MainActivity : AppCompatActivity() {
 
         registerReceiver(broadcastReceiver, IntentFilter("vpn_stopped"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_started"))
+
+        // TODO make a list
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err"))
         registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err_dns"))
+        registerReceiver(broadcastReceiver, IntentFilter("vpn_start_err_config"))
+
         registerReceiver(broadcastReceiver, IntentFilter("pong"))
 
         sendBroadcast(Intent("ping"))
 
-        var configString = Preferences.getString(applicationContext, getString(R.string.preference_config_key), getString(R.string.default_config))
-        configString?.let {
-            formatJsonString(it).let {
-                configView.setText(it, TextView.BufferType.EDITABLE)
-            }
-        }
+        updateUI()
+
+        configScroll.isSmoothScrollingEnabled = true
 
         fab.setOnClickListener { view ->
             if (!running && !starting) {
                 starting = true
                 fab.setImageResource(android.R.drawable.ic_media_ff)
                 configString = configView.text.toString()
-                Preferences.putString(applicationContext, getString(R.string.preference_config_key), configString)
+                Preferences.putString(applicationContext, Constants.Companion.PREFERENCE_CONFIG_KEY, configString)
                 val intent = VpnService.prepare(this)
                 if (intent != null) {
                     startActivityForResult(intent, 1)
@@ -119,6 +148,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        updateUI()
         sendBroadcast(Intent("ping"))
     }
 
@@ -133,6 +163,11 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
+            R.id.subscribe_config_btn -> {
+                val intent = Intent(this, SubscribeConfigActivity::class.java)
+                startActivity(intent)
+                return true
+            }
             R.id.format_btn -> {
                 val prettyText = formatJsonString(configView.text.toString())
                 prettyText?.let {
@@ -144,10 +179,10 @@ class MainActivity : AppCompatActivity() {
                 val config = configView.text.toString()
                 val prettyText = formatJsonString(config)
                 if (prettyText == null) {
-                    showAlert("Invalid JSON")
+                    showAlert(this, "Invalid JSON")
                     return true
                 }
-                Preferences.putString(applicationContext, getString(R.string.preference_config_key), prettyText)
+                Preferences.putString(applicationContext, Constants.PREFERENCE_CONFIG_KEY, prettyText)
                 return true
             }
             R.id.log_btn -> {
@@ -183,16 +218,9 @@ class MainActivity : AppCompatActivity() {
         return try {
             JSONObject(json).toString(2)
         } catch (e: JSONException) {
-            showAlert("Invalid JSON")
+            showAlert(this, "Invalid JSON")
             return null
         }
-    }
-
-    fun showAlert(msg: String) {
-        val dialog = AlertDialog.Builder(this).setTitle("Message").setMessage(msg)
-                .setPositiveButton("Ok", { dialog, i ->
-                })
-        dialog.show()
     }
 
 //    private fun startNotification() {

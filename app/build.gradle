@@ -22,6 +22,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    applicationVariants.all { variant ->
+        variant.resValue "string", "coreName", "4.17.0"
+        variant.resValue "string", "versionName", variant.versionName
+    }
     productFlavors {
     }
 }
@@ -36,6 +40,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0-alpha02'
     implementation "androidx.paging:paging-runtime:2.1.0-rc01"
     implementation 'com.beust:klaxon:3.0.1'
+
     implementation(name: 'tun2socks', ext: 'aar')
 
     implementation 'androidx.room:room-runtime:2.1.0-alpha03'

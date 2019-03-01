@@ -31,4 +31,30 @@
         android:summary="The DNS server that will be used by the freedom outbound (in case you are using AsIs as the freedom outbound's domain strategy) or for resolving domain names of outbound servers, and these DNS requests won't be logged to proxy log. Moreover, non A/AAAA DNS queries from the OS will also be sent to this DNS server, they will be treated as normal UDP traffic."
         android:title="Local DNS"
         app:iconSpaceReserved="false"></EditTextPreference>
+
+    <EditTextPreference
+        android:defaultValue="http,tls"
+        android:key="@string/sniffing"
+        android:summary="Sniffing settings for the tun2socks inbound."
+        android:title="Sniffing"
+        app:iconSpaceReserved="false"></EditTextPreference>
+
+    <EditTextPreference
+        android:defaultValue="tun2socks"
+        android:key="@string/inbound_tag"
+        android:summary="Inbound tag for distinguishing traffic coming from tun2socks in routing procedure."
+        android:title="Inbound Tag"
+        app:iconSpaceReserved="false"></EditTextPreference>
+
+    <Preference
+        app:key="core_version"
+        app:title="Core Version"
+        app:summary="@string/coreName"
+        app:iconSpaceReserved="false"/>
+
+    <Preference
+        app:key="app_version"
+        app:title="Version"
+        app:summary="@string/versionName"
+        app:iconSpaceReserved="false"/>
 </PreferenceScreen>

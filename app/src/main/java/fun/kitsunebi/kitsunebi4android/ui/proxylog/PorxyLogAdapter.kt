@@ -48,6 +48,12 @@ class ProxyLogAdapter(val context: Context) : PagedListAdapter<ProxyLog, ProxyLo
                             val up = humanReadableByteCount(proxyLog.uploadBytes!!.toLong(), true)
                             val down = humanReadableByteCount(proxyLog.downloadBytes!!.toLong(), true)
                             row2_2.text = "${up}↑, ${down}↓"
+                            if (proxyLog.downloadBytes!!.toInt() == 0) {
+                                row2_2.setTextColor(ContextCompat.getColor(context, R.color.colorAccent))
+                            } else {
+                                row2_2.setTextColor(ContextCompat.getColor(context, R.color.colorDefaultText))
+                            }
+
                         }
 
                         val sdf = java.text.SimpleDateFormat("HH:mm:ss")

@@ -10,6 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_logcat.*
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -29,7 +30,7 @@ class LogcatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logcat)
         logcatTextView = findViewById<TextView>(R.id.logcat_text)
-        logcatTextView.movementMethod = ScrollingMovementMethod()
+        logcatScroll.isSmoothScrollingEnabled = true
 
         bgThread = object : Thread() {
             override fun run() {
