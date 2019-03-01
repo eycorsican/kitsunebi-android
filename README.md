@@ -214,10 +214,6 @@ Github Releases: https://github.com/eycorsican/Kitsunebi4Android/releases
 }
 ```
 
-## Build
-
-You must first build/download the `tun2socks.aar` library from [here](https://github.com/eycorsican/kitsunebi-android/releases) and copy into `app/libs`, get `geoip.dat` and `geosite.dat` from [these](https://github.com/v2ray/geoip/releases) [two](https://github.com/v2ray/domain-list-community/releases) repos and copy them into `app/src/main/res/raw`, don't forget renaming them.
-
 ## 开发相关问题
 
 这个 V2Ray Android 客户端利用 `go-tun2socks` 把所有的 TCP/UDP 流量转给到 V2Ray 处理，所用的 `v2ray-core` 是没经过任何修改的官方版本，所以在配置和体验方面不会有太大差别。但在 Android 上有一些东西需要特殊处理，这也是在配置和使用上造成一些差别的地方。
