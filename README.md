@@ -13,6 +13,9 @@ A fully-featured V2Ray client for Android.
 ## 关于 DNS 处理
 自 v1.0.0 起，默认的 DNS 处理方式为 Fake DNS，启用 Fake DNS 后，DNS 请求的流量几乎不会被传进 V2Ray，所以 V2Ray 的 `内置 DNS` 和 `DNS outbound` 配置不会起太大作用；当 Fake DNS 处于禁用状态，DNS 请求的流量会以正常 UDP 流量的形式进入 V2Ray，这时你可以使用 inbound tag 在路由中配置路由规则来识别出相应 DNS 流量，从而转发给 `DNS outbound`，从而让 V2Ray 的 `内置 DNS` 来处理（看下面配置示例）。如果使用自定义配置的同时开启 Fake DNS，则需要确保 freedom outbound 中的域名策略为 `非 AsIs`。
 
+为什么启用了 Fake DNS 后，freedom outbound 一定要用 `非 AsIs` 策略呢？如果你不熟悉 `Fake DNS` 怎么工作，可以看看 [这篇文章](https://medium.com/@TachyonDevel/%E6%BC%AB%E8%B0%88%E5%90%84%E7%A7%8D%E9%BB%91%E7%A7%91%E6%8A%80%E5%BC%8F-dns-%E6%8A%80%E6%9C%AF%E5%9C%A8%E4%BB%A3%E7%90%86%E7%8E%AF%E5%A2%83%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-62c50e58cbd0)。
+启用 `Fake DNS` 后，本地的系统 DNS 缓存是被染污了的，如果 freedom outbound 用了 AsIs，对于那些非代理的域名请求，到了 freedom outbound 的时候，如果用系统 DNS 去解析（`AsIs` 策略），得到的 DNS 结果将会是被染污了不可用的 IP，会导致直连的请求发不出去。为了避免这个问题，方法就是让 freedom outbound 不使用系统的 DNS，也即不使用 `AsIs`，转而使用 V2Ray 的 `内置 DNS`（`UseIP` 策略）。
+
 Fake DNS 跟 V2Ray 的 `流量探测` 在效果上非常相似，目的同样是要拿到请求的域名，但工作原理上有较大差异：
 - Fake DNS
   - 适用于任何请求的流量
