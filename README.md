@@ -6,9 +6,43 @@ A fully-featured V2Ray client for Android.
 
 <a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="100"></a>
 
-## 扩展功能
-扩展了 v2ray-core 的功能：
-- 新增 Latency Balancing Strategy：[详情及配置看这里](https://gist.github.com/eycorsican/356debc8295e752c1df6ad7286f98ad4)
+## 负载均衡策略
+Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延迟值来选择最快速节点的策略，图形界面上可以添加节点组来开启，使用自定义配置的话，有以下配置项，所有时间数值单位为秒：
+```json
+{
+    "tag": "proxy",
+    "selector": [
+        "primary_proxy",
+        "backup_proxy"
+    ],
+    "strategy": "latency",
+    "interval": 60, // 每次测速之间的最少时间间隔
+    "totalMeasures": 3, // 每次测速所做的请求次数
+    "delay": 1, // 每个测速请求之间的时间间隔
+    "timeout": 4, // 测速请求的超时时间
+    "probeTarget": "tcp:www.google.com:80", // 测速请求发送的目的地
+    "probeContent": "HEAD / HTTP/1.1\r\n\r\n" // 测速请求内容
+}
+```
+
+## 规则集
+规则集目前支持以下配置项：
+- Rule
+  - DOMAIN-KEYWORD
+  - DOMAIN-SUFFIX
+  - DOMAIN-FULL
+  - IP-CIDR
+  - PORT
+  - GEOIP
+  - FINAL
+- RoutingDomainStrategy
+
+内置规则：
+- `geosite` 规则取自：https://github.com/v2ray/domain-list-community
+- `geoip` 规则为 MaxMind 的 GeoLite2，取自：https://github.com/v2ray/geoip
+
+第三方规则：
+- 兼容的第三方规则集，一般包含拦截广告、统计行为、隐私跟踪相关的规则：https://github.com/ConnersHua/Profiles
 
 ## 关于 DNS 处理
 自 v1.0.0 起，默认的 DNS 处理方式为 Fake DNS，启用 Fake DNS 后，DNS 请求的流量几乎不会被传进 V2Ray，所以 V2Ray 的 `内置 DNS` 和 `DNS outbound` 配置不会起太大作用；当 Fake DNS 处于禁用状态，DNS 请求的流量会以正常 UDP 流量的形式进入 V2Ray，这时你可以使用 inbound tag 在路由中配置路由规则来识别出相应 DNS 流量，从而转发给 `DNS outbound`，从而让 V2Ray 的 `内置 DNS` 来处理（看下面配置示例）。如果使用自定义配置的同时开启 Fake DNS，则需要确保 freedom outbound 中的域名策略为 `非 AsIs`。
