@@ -37,6 +37,8 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
   - FINAL
 - RoutingDomainStrategy
 
+更多关于规则集的示例及说明可以看这里：https://github.com/eycorsican/rule-sets
+
 内置规则：
 - `geosite` 规则取自：https://github.com/v2ray/domain-list-community
 - `geoip` 规则为 MaxMind 的 GeoLite2，取自：https://github.com/v2ray/geoip
