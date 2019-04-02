@@ -25,12 +25,18 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
 }
 ```
 
+## 延迟测试
+延迟测试并非 ICMP Ping 或 TCP Ping，所用的方法跟负载均衡中的 latency 策略所用的方法大致一样，实际向 outbound 发送一个代理请求，记录返回非空数据所使用的时间。
+
+需要注意的是 `延迟` 跟 `速度` 并不是同一个概念，比如说同一个服务器上使用 QUIC 的 outbound 和一个使用 TCP 的 outbound，QUIC outbound 一般会有较低的延迟，但实际速度有可能比 TCP 慢。
+
 ## 规则集
 规则集目前支持以下配置项：
 - Rule
   - DOMAIN-KEYWORD
   - DOMAIN-SUFFIX
   - DOMAIN-FULL
+  - DOMAIN
   - IP-CIDR
   - PORT
   - GEOIP
