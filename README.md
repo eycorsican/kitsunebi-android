@@ -33,15 +33,21 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
 ## 规则集
 规则集目前支持以下配置项：
 - Rule
-  - DOMAIN-KEYWORD
-  - DOMAIN-SUFFIX
-  - DOMAIN-FULL
-  - DOMAIN
-  - IP-CIDR
+  - DOMAIN-KEYWORD（路由中的 `纯字符串`）
+  - DOMAIN-SUFFIX（路由中的 `子域名`）
+  - DOMAIN-FULL（路由中的 `完整匹配`）
+  - DOMAIN（同上，等效）
+  - IP-CIDR（路由中的 IP 或 CIDR 规则）
   - PORT
-  - GEOIP
-  - FINAL
+  - GEOIP（路由中的 GeoIP 规则）
+  - FINAL（根据域名策略，生成 network 规则 (`network: "tcp,udp"`) 或者 `IP 规则`(`ip: ["0.0.0.0/0", "::/0"]`) 作为一条默认出口规则）
 - RoutingDomainStrategy
+- LocalPolicy
+  - handshake
+  - connIdle
+  - uplinkOnly
+  - downlinkOnly
+  - bufferSize
 
 更多关于规则集的示例及说明可以看这里：https://github.com/eycorsican/rule-sets
 
