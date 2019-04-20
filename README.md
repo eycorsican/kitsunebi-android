@@ -7,7 +7,7 @@ A fully-featured V2Ray client for Android.
 <a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="100"></a>
 
 ## URI、二维码
-Kitsunebi 安卓版所生成的 URI 和二维码格式为 [FOV001](https://github.com/v2ray/v2ray-core/issues/1569) 中所提出的 `面向协议格式（Protocol Oriented Serialization）`，并支持该格式的导入。
+Kitsunebi 安卓版所生成的 URI 和二维码格式为 [FOV001](https://github.com/v2ray/v2ray-core/issues/1569) 中所提出的 `面向协议格式`（`Protocol Oriented Serialization`），并支持该格式的导入。
 
 ## 负载均衡策略
 Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延迟值来选择最快速节点的策略，图形界面上可以添加节点组来开启，使用自定义配置的话，有以下配置项，所有时间数值单位为秒：
