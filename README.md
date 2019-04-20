@@ -61,6 +61,7 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
 - DnsClientIp（内建 DNS 中的 clientIp）
 - Log
   - loglevel（V2Ray 的日志等级）
+
 更多关于规则集的示例及说明可以看这里：https://github.com/eycorsican/rule-sets
 
 内置规则：
