@@ -6,6 +6,9 @@ A fully-featured V2Ray client for Android.
 
 <a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="100"></a>
 
+## URI、二维码
+Kitsunebi 安卓版所生成的 URI 和二维码格式为 [FOV001](https://github.com/v2ray/v2ray-core/issues/1569) 中所提出的 `面向协议格式（Protocol Oriented Serialization）`，并支持该格式的导入。
+
 ## 负载均衡策略
 Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延迟值来选择最快速节点的策略，图形界面上可以添加节点组来开启，使用自定义配置的话，有以下配置项，所有时间数值单位为秒：
 ```json
@@ -32,7 +35,7 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
 
 ## 规则集
 规则集目前支持以下配置项：
-- Rule
+- RoutingRule（等同于 Rule，路由规则配置）
   - DOMAIN-KEYWORD（路由中的 `纯字符串`）
   - DOMAIN-SUFFIX（路由中的 `子域名`）
   - DOMAIN-FULL（路由中的 `完整匹配`）
@@ -41,14 +44,23 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
   - PORT
   - GEOIP（路由中的 GeoIP 规则）
   - FINAL（根据域名策略，生成 network 规则 (`network: "tcp,udp"`) 或者 `IP 规则`(`ip: ["0.0.0.0/0", "::/0"]`) 作为一条默认出口规则）
-- RoutingDomainStrategy
-- LocalPolicy
+- RoutingDomainStrategy（路由域名策略）
+- LocalPolicy（本地策略）
   - handshake
   - connIdle
   - uplinkOnly
   - downlinkOnly
   - bufferSize
-
+- DnsServer（V2Ray 内建 DNS 服务器配置）
+- DnsRule（内建 DNS 中的域名规则，跟路由规则配置方式一样）
+  - DOMAIN-KEYWORD
+  - DOMAIN-SUFFIX
+  - DOMAIN-FULL
+  - DOMAIN
+- DnsHost（内建 DNS 的 hosts）
+- DnsClientIp（内建 DNS 中的 clientIp）
+- Log
+  - loglevel（V2Ray 的日志等级）
 更多关于规则集的示例及说明可以看这里：https://github.com/eycorsican/rule-sets
 
 内置规则：
