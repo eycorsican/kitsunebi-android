@@ -73,7 +73,7 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
 第三方规则：
 - 兼容的第三方规则集，一般包含拦截广告、统计行为、隐私跟踪相关的规则：https://github.com/ConnersHua/Profiles
 
-## 关于 DNS 处理
+## DNS 处理
 自 v1.0.0 起，默认的 DNS 处理方式为 Fake DNS，启用 Fake DNS 后，DNS 请求的流量几乎不会被传进 V2Ray，所以 V2Ray 的 `内置 DNS` 和 `DNS outbound` 配置不会起太大作用；当 Fake DNS 处于禁用状态，DNS 请求的流量会以正常 UDP 流量的形式进入 V2Ray，这时你可以使用 inbound tag 在路由中配置路由规则来识别出相应 DNS 流量，从而转发给 `DNS outbound`，从而让 V2Ray 的 `内置 DNS` 来处理（看下面配置示例）。<del>如果使用自定义配置的同时开启 Fake DNS，则需要确保 freedom outbound 中的域名策略为 `非 AsIs`。</del>
 
 <del>为什么启用了 Fake DNS 后，freedom outbound 一定要用 `非 AsIs` 策略呢？如果你不熟悉 `Fake DNS` 怎么工作，可以看看 [这篇文章](https://medium.com/@TachyonDevel/%E6%BC%AB%E8%B0%88%E5%90%84%E7%A7%8D%E9%BB%91%E7%A7%91%E6%8A%80%E5%BC%8F-dns-%E6%8A%80%E6%9C%AF%E5%9C%A8%E4%BB%A3%E7%90%86%E7%8E%AF%E5%A2%83%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-62c50e58cbd0)。
@@ -87,6 +87,8 @@ Fake DNS 跟 V2Ray 的 `流量探测` 在效果上非常相似，目的同样是
 - `流量探测`
   - 只适用 http/tls 流量
   - 不能控制本地是否发出 DNS 请求流量（由 V2Ray 的 DNS 功能模块控制）
+
+Fake DNS 与 流量探测都是解决 DNS 染污的方式，必须二选一，否则遇到 DNS 污染会导致一些 app 无法使用。
 
 ## 配置示例
 
