@@ -47,6 +47,7 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
   - GEOIP（路由中的 GeoIP 规则）
   - FINAL（根据域名策略，生成 network 规则 (`network: "tcp,udp"`) 或者 `IP 规则`(`ip: ["0.0.0.0/0", "::/0"]`) 作为一条默认出口规则）
 - RoutingDomainStrategy（路由域名策略）
+- FreedomDomainStrategy（Freedom outbound 域名策略）
 - LocalPolicy（本地策略）
   - handshake
   - connIdle
