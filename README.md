@@ -63,6 +63,10 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
 - DnsClientIp（内建 DNS 中的 clientIp）
 - Log
   - loglevel（V2Ray 的日志等级）
+- PerAppVpn（可选配置 On/Off/Manual，控制是否启用分应用代理功能，一旦应用，将覆盖到“设置”中）
+- PerAppMode（可选配置 Allow/Disallow，对应分应用代理模式，一旦应用，将覆盖到“设置”中）
+- PerAppAllow（正则表达式列表，一行一个表达式，匹配应用包名称，匹配到的应用将会加入到分应用代理的“允许列表”，一旦应用，将覆盖到“设置”中）
+- PerAppDisallow（正则表达式列表，一行一个表达式，匹配应用包名称，匹配到的应用将会加入到分应用代理的“不允许列表”，一旦应用，将覆盖到“设置”中）
 
 更多关于规则集的示例及说明可以看这里：https://github.com/eycorsican/rule-sets
 
