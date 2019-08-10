@@ -10,7 +10,7 @@ A fully-featured V2Ray client for Android.
 Kitsunebi 安卓版所生成的 URI 和二维码格式为 [FOV001](https://github.com/v2ray/v2ray-core/issues/1569) 中所提出的 `面向协议格式`（`Protocol Oriented Serialization`），并支持该格式的导入。
 
 ## 负载均衡策略
-Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延迟值来选择最快速节点的策略，图形界面上可以添加节点组来开启，使用自定义配置的话，有以下配置项，所有时间数值单位为秒：
+Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延迟值来选择最快速节点的策略，图形界面上可以添加节点组来开启，使用自定义配置的话，有以下配置项，除 tolerance 为毫秒外，其它所有时间数值单位为秒：
 ```json
 {
     "tag": "proxy",
@@ -23,9 +23,22 @@ Kitsunebi 使用的 Core 扩展了 v2ray-core 的功能，新增根据节点延�
     "totalMeasures": 3, // 每次测速中对每个 outbound 所做的请求次数
     "delay": 1, // 每个测速请求之间的时间间隔
     "timeout": 4, // 测速请求的超时时间
-    "probeTarget": "tcp:www.google.com:80", // 测速请求发送的目的地
+    "tolerance": 300, // 可接受的延迟波动范围，切换最佳节点会将此波动范围考虑进去
+    "probeTarget": "tls:www.google.com:443", // 测速请求发送的目的地
     "probeContent": "HEAD / HTTP/1.1\r\n\r\n" // 测速请求内容
 }
+```
+
+`probeTarget` 中的协议部分可以是 tcp/udp/tls, tls 表示 TLS over TCP，上面配置表示向 www.google.com 发起一个 HTTPS 的 HEAD 请求，相当于这条命令：
+
+```sh
+curl -I 'https://www.google.com'
+```
+
+如果 `probeTarget` 是 "tcp:www.google.com:80"，则相当于这条命令：
+
+```sh
+curl -I 'http://www.google.com'
 ```
 
 ## 延迟测试
